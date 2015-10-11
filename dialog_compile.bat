@@ -1,0 +1,1 @@
+pyuic4 gui\%1.ui -o views\%1.py

@@ -1,0 +1,9 @@
+**/.idea
+**/.idea/workspace.xml
+**/.idea/tasks.xml
+*.pyc
+
+working_directory/*
+
+/dist
+/build
