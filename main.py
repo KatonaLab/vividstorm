@@ -12,8 +12,10 @@ if __name__ == "__main__":
     mainWindow = MainWindow()
     mainWindow.setupUi(qtWindow)
 
+
     """ additional init """
     mainWindow.init_component(qtWindow)
+
 
     """ show & run """
     qtWindow.show()

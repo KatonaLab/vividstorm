@@ -1,6 +1,6 @@
 # -*- mode: python -*-
 a = Analysis(['main.py'],
-             pathex=['C:\\Users\\miczan.vivien\\Documents\\KOKI\\VividSTORM\\vividstorm'],
+             pathex=['C:\\Users\\miczan.vivien\\Documents\\VividSTORM'],
              hiddenimports=['scipy.special._ufuncs_cxx'],
              hookspath=None,
              runtime_hooks=None)
