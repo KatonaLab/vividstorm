@@ -2215,7 +2215,7 @@ class ExportCoordinatesTxtAnalysis(Analysis):
 
                 roi=self.ROI.roi.shape()
                 element_nr=roi.elementCount()
-                for k in range(element_nr):
+                for k in range(element_nr/3):
                     f_roi.write(str(roi.elementAt(k).x)+'\t'+str(roi.elementAt(k).y)+'\n')
 
 
@@ -2235,7 +2235,7 @@ class ExportCoordinatesTxtAnalysis(Analysis):
                 PolygonItem = self.ROI.roi[0]
                 roi=PolygonItem.shape()
                 element_nr=roi.elementCount()
-                for k in range(element_nr):
+                for k in range(element_nr/3):
                     f_roi.write(str(roi.elementAt(k).x)+'\t'+str(roi.elementAt(k).y)+'\n')
 
             f_roi.close()
