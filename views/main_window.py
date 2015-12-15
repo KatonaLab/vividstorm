@@ -1179,7 +1179,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "VividSTORM 1.3.1", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "VividSTORM 1.3.2", None))
         self.groupBox_storm_top_controls.setTitle(_translate("MainWindow", "STORM images", None))
         self.pushButton_open_storm.setText(_translate("MainWindow", "Open files...", None))
         self.pushButton_close_all_storm.setText(_translate("MainWindow", "Close files", None))
