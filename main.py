@@ -16,7 +16,6 @@ if __name__ == "__main__":
     """ additional init """
     mainWindow.init_component(qtWindow)
 
-
     """ show & run """
     qtWindow.show()
     sys.exit(qtApp.exec_())

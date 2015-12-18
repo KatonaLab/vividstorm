@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>VividSTORM 1.3</string>
+   <string>VividSTORM 1.3.2</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/main_resources.qrc">
@@ -257,8 +257,8 @@ QTabBar::tab:selected{
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>280</width>
-                   <height>88</height>
+                   <width>406</width>
+                   <height>92</height>
                   </rect>
                  </property>
                  <property name="sizePolicy">
@@ -519,7 +519,7 @@ QTabBar::tab:selected{
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>213</width>
+                   <width>389</width>
                    <height>268</height>
                   </rect>
                  </property>
@@ -1672,6 +1672,7 @@ QMenu::item::selected {
     <addaction name="actionEllipse_ROI_selecting"/>
     <addaction name="actionCircle_ROI_selecting"/>
     <addaction name="actionActiveContour_selector"/>
+    <addaction name="actionDelete_ROI_selector"/>
    </widget>
    <widget class="QMenu" name="menuTools_2">
     <property name="title">
@@ -1682,6 +1683,9 @@ QMenu::item::selected {
     <addaction name="actionShow_1_m_scale"/>
     <addaction name="actionLUT_changer"/>
     <addaction name="actionAnalysis"/>
+    <addaction name="separator"/>
+    <addaction name="actionJoin_Result_files_in_a_folder"/>
+    <addaction name="actionJoin_ROI_attribute_files_in_a_folder"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSTORMView"/>
@@ -2915,6 +2919,28 @@ QMenu::item::selected {
    </property>
    <property name="toolTip">
     <string>Register STORM and confocal images</string>
+   </property>
+   <property name="shortcut">
+    <string>R</string>
+   </property>
+  </action>
+  <action name="actionJoin_Result_files_in_a_folder">
+   <property name="text">
+    <string>Join Result files in a folder...</string>
+   </property>
+  </action>
+  <action name="actionJoin_ROI_attribute_files_in_a_folder">
+   <property name="text">
+    <string>Join ROI attribute files in a folder...</string>
+   </property>
+  </action>
+  <action name="actionDelete_ROI_selector">
+   <property name="icon">
+    <iconset resource="../resources/main_resources.qrc">
+     <normaloff>:/icon/icons/delete30.png</normaloff>:/icon/icons/delete30.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete ROI</string>
    </property>
    <property name="shortcut">
     <string>R</string>

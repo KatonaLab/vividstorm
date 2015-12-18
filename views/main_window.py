@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui\main_window.ui'
 #
-# Created: Sat Oct 10 18:11:31 2015
+# Created: Fri Dec 18 11:28:31 2015
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -153,7 +153,7 @@ class Ui_MainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollArea_2.setObjectName(_fromUtf8("scrollArea_2"))
         self.scrollAreaWidgetContents_2 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 280, 88))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 406, 92))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -276,7 +276,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents_3 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_3.setGeometry(QtCore.QRect(0, 0, 213, 268))
+        self.scrollAreaWidgetContents_3.setGeometry(QtCore.QRect(0, 0, 389, 268))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -1133,6 +1133,13 @@ class Ui_MainWindow(object):
         self.actionImage_Registration = QtGui.QAction(MainWindow)
         self.actionImage_Registration.setIcon(icon25)
         self.actionImage_Registration.setObjectName(_fromUtf8("actionImage_Registration"))
+        self.actionJoin_Result_files_in_a_folder = QtGui.QAction(MainWindow)
+        self.actionJoin_Result_files_in_a_folder.setObjectName(_fromUtf8("actionJoin_Result_files_in_a_folder"))
+        self.actionJoin_ROI_attribute_files_in_a_folder = QtGui.QAction(MainWindow)
+        self.actionJoin_ROI_attribute_files_in_a_folder.setObjectName(_fromUtf8("actionJoin_ROI_attribute_files_in_a_folder"))
+        self.actionDelete_ROI_selector = QtGui.QAction(MainWindow)
+        self.actionDelete_ROI_selector.setIcon(icon23)
+        self.actionDelete_ROI_selector.setObjectName(_fromUtf8("actionDelete_ROI_selector"))
         self.menuFile.addAction(self.actionOpen_STORM_files)
         self.menuFile.addAction(self.actionClose_STORM_files)
         self.menuFile.addSeparator()
@@ -1146,11 +1153,15 @@ class Ui_MainWindow(object):
         self.menuSTORMView.addAction(self.actionEllipse_ROI_selecting)
         self.menuSTORMView.addAction(self.actionCircle_ROI_selecting)
         self.menuSTORMView.addAction(self.actionActiveContour_selector)
+        self.menuSTORMView.addAction(self.actionDelete_ROI_selector)
         self.menuTools_2.addAction(self.action3D)
         self.menuTools_2.addAction(self.actionDragging_mode)
         self.menuTools_2.addAction(self.actionShow_1_m_scale)
         self.menuTools_2.addAction(self.actionLUT_changer)
         self.menuTools_2.addAction(self.actionAnalysis)
+        self.menuTools_2.addSeparator()
+        self.menuTools_2.addAction(self.actionJoin_Result_files_in_a_folder)
+        self.menuTools_2.addAction(self.actionJoin_ROI_attribute_files_in_a_folder)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuSTORMView.menuAction())
         self.menubar.addAction(self.menuTools_2.menuAction())
@@ -1366,5 +1377,9 @@ class Ui_MainWindow(object):
         self.actionImage_Registration.setText(_translate("MainWindow", "Image Registration", None))
         self.actionImage_Registration.setToolTip(_translate("MainWindow", "Register STORM and confocal images", None))
         self.actionImage_Registration.setShortcut(_translate("MainWindow", "R", None))
+        self.actionJoin_Result_files_in_a_folder.setText(_translate("MainWindow", "Join Result files in a folder...", None))
+        self.actionJoin_ROI_attribute_files_in_a_folder.setText(_translate("MainWindow", "Join ROI attribute files in a folder...", None))
+        self.actionDelete_ROI_selector.setText(_translate("MainWindow", "Delete ROI", None))
+        self.actionDelete_ROI_selector.setShortcut(_translate("MainWindow", "R", None))
 
 import main_resources_rc

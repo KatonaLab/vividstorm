@@ -25,6 +25,9 @@ import random
 from scipy import ndimage
 from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph as pg
+import sys
+from PyQt4 import QtGui
+import fnmatch
 
 
 class Analysis(RunnableComponent):
@@ -160,6 +163,8 @@ class Analysis(RunnableComponent):
             return None
 
 # commonly used functions
+
+
 
     def EucDistance2D(self, point1, point2):
         # simple Euclidean distance calculation in 2D
@@ -691,6 +696,77 @@ class Analysis(RunnableComponent):
 
         return (random_points)
 
+def JoinResults(object):
+    print "join Result files"
+    file_dialog = QtGui.QFileDialog()
+    path = QtGui.QFileDialog.getExistingDirectory(file_dialog, 'Select working directory')
+
+    print path
+
+    key='*Results.txt'
+    f='_All_Results_.txt'
+
+    os.chdir(str(path))
+    f = open(f, 'w')
+
+    firstfile=True
+
+    for df in os.listdir('.'):
+        if fnmatch.fnmatch(df, key):
+            print df
+
+            ins = open(df, "r" )
+
+            k=0
+            for line in ins:
+
+                if k==0:
+                    if firstfile==True:
+                        f.write(line)
+                        firstfile=False
+                if k==1:
+                    f.write(line)
+                k+=1
+
+            ins.close()
+
+    f.close()
+    print "join ready"
+
+def JoinROIs(object, workdir):
+    print "Join ROI output files"
+
+    file_dialog = QtGui.QFileDialog()
+    path = str(QtGui.QFileDialog.getExistingDirectory(file_dialog, 'Select working directory', workdir))
+
+    print path
+
+    key='*RoiAttr.txt'
+    fn='_All_Roi_.txt'
+
+    os.chdir(path)
+    fn = open(fn, 'w')
+
+
+    fn.write('\t'.join(['ID','XOffset','YOffset','ROIType','ConfPixNum','ConfPixInt'])+'\n')
+    for df in os.listdir('.'):
+        if fnmatch.fnmatch(df, key):
+            with open(df) as f:
+                lines=f.readlines()
+
+            ID=df
+            XOffset=lines[1].split("\t")[0]
+            YOffset=lines[1].split("\t")[1].strip()
+            ROIType=lines[3].split()[0]
+            ConfPixNum=lines[5].strip()
+            ConfPixInt=lines[7]
+
+            fn.write(ID+"\t"+XOffset+"\t"+YOffset+"\t"+ROIType+"\t"+ConfPixNum+"\t"+ConfPixInt)
+    fn.close()
+
+
+
+    print "join ready"
 
 class NlpAnalysis(Analysis):
     def __init__(self, *args, **kwargs):
@@ -2215,7 +2291,7 @@ class ExportCoordinatesTxtAnalysis(Analysis):
 
                 roi=self.ROI.roi.shape()
                 element_nr=roi.elementCount()
-                for k in range(element_nr/3):
+                for k in range(element_nr/3): # /3: ROI coordinates are stored 3X
                     f_roi.write(str(roi.elementAt(k).x)+'\t'+str(roi.elementAt(k).y)+'\n')
 
 
@@ -2235,7 +2311,7 @@ class ExportCoordinatesTxtAnalysis(Analysis):
                 PolygonItem = self.ROI.roi[0]
                 roi=PolygonItem.shape()
                 element_nr=roi.elementCount()
-                for k in range(element_nr/3):
+                for k in range(element_nr/3):  # /3: ROI coordinates are stored 3X
                     f_roi.write(str(roi.elementAt(k).x)+'\t'+str(roi.elementAt(k).y)+'\n')
 
             f_roi.close()

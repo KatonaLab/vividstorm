@@ -77,10 +77,8 @@ class StormImage(MicroscopeImage):
                         FirstLine = False
                 if not FirstLine:
                     LineData = l.split('\t')
-
                     if len(LineData) == 1:
                         LineData = l.split()
-
                     UsefulData = []
 
                     UsefulData.append(LineData[X])

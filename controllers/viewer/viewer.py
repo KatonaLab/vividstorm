@@ -181,7 +181,7 @@ class Viewer(object):
             self.main_window.storm_settings.add_roi(active_contour_roi)
 
     def remove_roi(self, roi):
-        if type(roi).__name__ == 'EllipseRoi' or type(roi).__name__ == 'CircleRoi':
+	if type(roi).__name__ == 'EllipseRoi' or type(roi).__name__ == 'CircleRoi':
             self.display.deleteEllipseROI(roi.roi)
         elif type(roi).__name__ == 'FreehandRoi':
             self.display.deleteFreehandROI(roi)
@@ -204,3 +204,4 @@ class Viewer(object):
             self.display.ShowScalebar(size)
         else:
             self.display.HideScalebar()
+

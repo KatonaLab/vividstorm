@@ -17,6 +17,7 @@ from images import *
 from rois import FreehandRoi
 from settings import *
 import os
+import analyses as anal
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -70,7 +71,6 @@ class MainWindow(Ui_MainWindow):
     def _setup_components(self):
         self.viewer = Viewer(main_window=self)
         self.viewer.change_drag_mode(self.actionDragging_mode.isChecked())
-
         self.storm_settings.setup(self, 'storm')
         self.storm_settings.set_default_values()
         self.storm_settings.setup_filters()
@@ -123,6 +123,9 @@ class MainWindow(Ui_MainWindow):
         self.actionEllipse_ROI_selecting.triggered.connect(lambda: self._draw_roi('ellipse'))
         self.actionCircle_ROI_selecting.triggered.connect(lambda: self._draw_roi('circle'))
         self.actionActiveContour_selector.triggered.connect(lambda: self._open_dialog(self.dialog_tool_active_contour))
+        self.actionDelete_ROI_selector.triggered.connect(lambda: self.viewer.remove_roi(self.storm_roi_list.currentItem()))
+        self.actionJoin_Result_files_in_a_folder.triggered.connect(lambda: anal.JoinResults(self, self.working_directory))
+        self.actionJoin_ROI_attribute_files_in_a_folder.triggered.connect(lambda: anal.JoinROIs(self, self.working_directory))
 
         self.actionShow_1_m_scale.triggered.connect(lambda: self._open_dialog(self.dialog_scale))
         self.actionDragging_mode.triggered.connect(lambda: self.viewer.change_drag_mode(self.actionDragging_mode.isChecked()))
@@ -309,6 +312,8 @@ class MainWindow(Ui_MainWindow):
                 self.confocal_images_list.setCurrentRow(-1)
 
     def _batch_step_files_by(self, step_size):
+	#delete roi
+	self.viewer.remove_roi(self.storm_roi_list.currentItem())
         storm_num = self.storm_images_list.count()
         next_active_row = self.storm_images_list.currentRow() + step_size
         if 0 <= next_active_row <= storm_num - 1:

@@ -362,7 +362,7 @@ class StormDisplay(object):
             roiShape = roi.mapToParent(roi.shape())
         ROIPoints = []
         ChannelNum = len(self.StormChannelList)
-        #for all cahnnels
+        #for all channels
         for i in range(ChannelNum):
                 ROIPoints.append([])
                 FilteredChannel=False
@@ -475,21 +475,22 @@ class StormDisplay(object):
         elif roitype=='Ellipse':
             roiShape = roi.mapToParent(roi.shape())
 
+	offset[0]=offset[0]*1000.0*self.ConfocalMetaData['SizeX']
+	offset[1]=offset[1]*1000.0*self.ConfocalMetaData['SizeX']
         for ii in range(resizedim.shape[1]):
             for jj in range(resizedim.shape[2]):
                 Scale=1000.0
-                if roiShape.contains(pg.Point(int((ii+0.5)*Scale * self.ConfocalMetaData['SizeX']), int((jj+0.5)*Scale * self.ConfocalMetaData['SizeX']) )):
+                if roiShape.contains(pg.Point(int((ii+0.5)*Scale * self.ConfocalMetaData['SizeX']+offset[0]), int((jj+0.5)*Scale * self.ConfocalMetaData['SizeX']+offset[1]) )):
                     PixelsXX.append(ii)
                     PixelsYY.append(jj)
 
-
-        NumPixelss=len(PixelsXX)
+	NumPixelss=len(PixelsXX)
         Intensitiess=[]
         for chh in range(resizedim.shape[0]):
             # calculate pixelpoint back to display point
             SumIntensity=0.0
             for ind in range(NumPixelss):
-                SumIntensity+=resizedim[chh,PixelsYY[ind]-offset[1],PixelsXX[ind]-offset[0]]
+                SumIntensity+=resizedim[chh,PixelsYY[ind],PixelsXX[ind]]
             Intensitiess.append(SumIntensity)
         #print Intensitiess
         #print NumPixelss
