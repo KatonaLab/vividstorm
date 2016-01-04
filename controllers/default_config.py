@@ -9,7 +9,7 @@ Author: turbo
 
 import os
 
-version = '1.3.2'
+version = '1.3.3'
 
 working_directory = os.path.join(os.getcwd(), u'working_directory')
 viewer_input_mode = 'pan' # pan, freehand, circle, contour

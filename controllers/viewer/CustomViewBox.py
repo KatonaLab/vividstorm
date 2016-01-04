@@ -107,8 +107,10 @@ class CustomViewBox(pg.ViewBox):
                     Msg=str.split(str(Msg),' Correlation:')[0]
                     self.main_window.status_bar.showMessage(Msg+' Correlation: The selected channels are not displayed' )
             #print signal.correlate2d(Im1,Im2)
-            
-            Scale=10*self.main_window.viewer.display.ConfocalSizeMultiplier
+            if self.main_window.viewer.display.ConfocalSizeMultiplier==1:
+                Scale=1000*self.main_window.viewer.display.ConfocalSizeMultiplier
+            else:
+                Scale=10*self.main_window.viewer.display.ConfocalSizeMultiplier
             self.main_window.doubleSpinBox_confocal_display_offset_x.setValue(
                 int(self.ConfocalOffset[1] * Scale * self.main_window.viewer.display.ConfocalMetaData['SizeX']))
             self.main_window.doubleSpinBox_confocal_display_offset_y.setValue(

@@ -191,11 +191,17 @@ class ConfocalSettings(Settings):
             px = self.main_window.viewer.display.ConfocalMetaData['SizeX']
         except KeyError:
             px = self.confocal_config_calibration_px
+        #self.main_window.viewer.display.Viewbox.ConfocalOffset = [
+            #self.confocal_display_offset_y / (10*self.main_window.viewer.display.ConfocalSizeMultiplier * px),
+            #self.confocal_display_offset_x / (10*self.main_window.viewer.display.ConfocalSizeMultiplier * px)
+
+        #]
+
         self.main_window.viewer.display.Viewbox.ConfocalOffset = [
             self.confocal_display_offset_y / (100 * px),
             self.confocal_display_offset_x / (100 * px)
-        ]
 
+        ]
 
     def apply_confocal_config(self):
         image = self.main_window.confocal_images_list.currentItem()

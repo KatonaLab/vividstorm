@@ -165,11 +165,12 @@ class StormDisplay(object):
         self.ConfocalData = copy.deepcopy(confocal_image.ConfocalData)
         self.ConfocalMetaData = copy.deepcopy(confocal_image.ConfocalMetaData)
         self.NumOfZSlices=0
+        ConfocalDataThreshold=1000 # threshold for confocal data above which it shouldn't be resized 10x
         # more Zchannels and color channels
         if len(self.ConfocalData.shape) > 3:
             Channels = self.ConfocalData[self.ConfocalZNum, :, :, :]
             self.NumOfZSlices=self.ConfocalData.shape[0]
-            if self.ConfocalData.shape[2]>2000:
+            if self.ConfocalData.shape[2]>ConfocalDataThreshold:
                 self.ConfocalSizeMultiplier=1.0
             self.ConfChannelToShow = np.zeros(
                 (self.ConfocalData.shape[1], self.ConfocalData.shape[2] *  self.ConfocalSizeMultiplier, self.ConfocalData.shape[3] *  self.ConfocalSizeMultiplier))
@@ -178,7 +179,7 @@ class StormDisplay(object):
                                                                      order=self.ConfocalInterpolationMethod)
         elif len(self.ConfocalData.shape) > 2 and self.ConfocalMetaData['ChannelNum'] == 1:
             #z channels only
-            if self.ConfocalData.shape[1]>2000:
+            if self.ConfocalData.shape[1]>ConfocalDataThreshold:
                 self.ConfocalSizeMultiplier=1.0
             self.ConfChannelToShow = np.zeros((1, self.ConfocalData.shape[1] *  self.ConfocalSizeMultiplier, self.ConfocalData.shape[2] *  self.ConfocalSizeMultiplier))
             self.NumOfZSlices=self.ConfocalData.shape[0]
@@ -188,7 +189,7 @@ class StormDisplay(object):
                                                                  order=self.ConfocalInterpolationMethod)
         elif len(self.ConfocalData.shape) > 2 and self.ConfocalMetaData['ChannelNum'] > 1:
             #color channels only
-            if self.ConfocalData.shape[1]>2000:
+            if self.ConfocalData.shape[1]>ConfocalDataThreshold:
                 self.ConfocalSizeMultiplier=1.0
             self.ConfChannelToShow = np.zeros(
                 (self.ConfocalData.shape[0], self.ConfocalData.shape[1] *  self.ConfocalSizeMultiplier, self.ConfocalData.shape[2] *  self.ConfocalSizeMultiplier))
@@ -197,7 +198,7 @@ class StormDisplay(object):
                                                                      order=self.ConfocalInterpolationMethod)
         else:
             #a single tif image
-            if self.ConfocalData.shape[0]>2000:
+            if self.ConfocalData.shape[0]>ConfocalDataThreshold:
                 self.ConfocalSizeMultiplier=1.0
             self.ConfChannelToShow = np.zeros((1, self.ConfocalData.shape[0] *  self.ConfocalSizeMultiplier, self.ConfocalData.shape[1] *  self.ConfocalSizeMultiplier))
             self.ConfChannelToShow[0, :, :] = scipy.ndimage.zoom(self.ConfocalData,  self.ConfocalSizeMultiplier,
@@ -460,7 +461,11 @@ class StormDisplay(object):
 
         img=self.ConfChannelToShow
         #print img.shape
-        resizedim=scipy.ndimage.zoom(img,(1,0.1,0.1),order=0)
+
+        print offset
+
+        zoomout=1.0/self.main_window.viewer.display.ConfocalSizeMultiplier
+        resizedim=scipy.ndimage.zoom(img,(1,zoomout,zoomout),order=0)
         #print resizedim.shape
 
         PixelsXX=[]
@@ -492,7 +497,7 @@ class StormDisplay(object):
             for ind in range(NumPixelss):
                 SumIntensity+=resizedim[chh,PixelsYY[ind],PixelsXX[ind]]
             Intensitiess.append(SumIntensity)
-        #print Intensitiess
+        print Intensitiess
         #print NumPixelss
 
         return [Intensitiess,NumPixelss]
