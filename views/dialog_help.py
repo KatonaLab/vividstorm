@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui\dialog_help.ui'
 #
-# Created: Fri Dec 18 11:28:31 2015
+# Created: Tue Feb 09 14:49:11 2016
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -62,5 +62,12 @@ class Ui_Dialog_help_2(object):
         self.Dialog_help.setPlainText(_translate("Dialog_help_2", "VividSTORM User Guide can be downloaded from:\n"
 "www.katonalab/VividSTORM\n"
 "\n"
+"If you encounter issues not addressed by this user guide, please contact via e-mail for additional support: vividstorm@koki.mta.hu\n"
+"\n"
+"If you find this software useful for your project, please cite:\n"
+"\n"
+"Correlated confocal and super-resolution imaging by VividSTORM\n"
+"Nature Protocols 11, 163–183 (2016)\n"
+"doi:10.1038/nprot.2016.002\n"
 "", None))
 

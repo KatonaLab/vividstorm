@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui\dialog_error.ui'
 #
-# Created: Fri Dec 18 11:28:31 2015
+# Created: Tue Feb 09 14:49:12 2016
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!

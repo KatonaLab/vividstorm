@@ -38,6 +38,13 @@
       <string>VividSTORM User Guide can be downloaded from:
 www.katonalab/VividSTORM
 
+If you encounter issues not addressed by this user guide, please contact via e-mail for additional support: vividstorm@koki.mta.hu
+
+If you find this software useful for your project, please cite:
+
+Correlated confocal and super-resolution imaging by VividSTORM
+Nature Protocols 11, 163–183 (2016)
+doi:10.1038/nprot.2016.002
 </string>
      </property>
     </widget>
