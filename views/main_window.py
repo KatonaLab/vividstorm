@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui\main_window.ui'
 #
-# Created: Fri Dec 18 11:28:31 2015
+# Created: Tue Feb 09 14:49:49 2016
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -1190,7 +1190,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "VividSTORM 1.3.3", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "VividSTORM 1.4", None))
         self.groupBox_storm_top_controls.setTitle(_translate("MainWindow", "STORM images", None))
         self.pushButton_open_storm.setText(_translate("MainWindow", "Open files...", None))
         self.pushButton_close_all_storm.setText(_translate("MainWindow", "Close files", None))
@@ -1376,7 +1376,7 @@ class Ui_MainWindow(object):
         self.actionCircle_ROI_selecting.setShortcut(_translate("MainWindow", "3", None))
         self.actionImage_Registration.setText(_translate("MainWindow", "Image Registration", None))
         self.actionImage_Registration.setToolTip(_translate("MainWindow", "Register STORM and confocal images", None))
-        self.actionImage_Registration.setShortcut(_translate("MainWindow", "R", None))
+        self.actionImage_Registration.setShortcut(_translate("MainWindow", "I", None))
         self.actionJoin_Result_files_in_a_folder.setText(_translate("MainWindow", "Join Result files in a folder...", None))
         self.actionJoin_ROI_attribute_files_in_a_folder.setText(_translate("MainWindow", "Join ROI attribute files in a folder...", None))
         self.actionDelete_ROI_selector.setText(_translate("MainWindow", "Delete ROI", None))

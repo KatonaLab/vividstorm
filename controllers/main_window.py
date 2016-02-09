@@ -124,7 +124,7 @@ class MainWindow(Ui_MainWindow):
         self.actionCircle_ROI_selecting.triggered.connect(lambda: self._draw_roi('circle'))
         self.actionActiveContour_selector.triggered.connect(lambda: self._open_dialog(self.dialog_tool_active_contour))
         self.actionDelete_ROI_selector.triggered.connect(lambda: self.viewer.remove_roi(self.storm_roi_list.currentItem()))
-        self.actionJoin_Result_files_in_a_folder.triggered.connect(lambda: anal.JoinResults(self, self.working_directory))
+        self.actionJoin_Result_files_in_a_folder.triggered.connect(lambda: anal.JoinResults( self.working_directory))
         self.actionJoin_ROI_attribute_files_in_a_folder.triggered.connect(lambda: anal.JoinROIs(self, self.working_directory))
 
         self.actionShow_1_m_scale.triggered.connect(lambda: self._open_dialog(self.dialog_scale))
