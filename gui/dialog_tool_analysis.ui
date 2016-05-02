@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1008</width>
+    <width>1009</width>
     <height>1008</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Analysis runner tool</string>
@@ -25,7 +31,7 @@ QScrollArea{
 	padding: 0px;
 }</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="widgetResizable">
@@ -36,11 +42,11 @@ QScrollArea{
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>973</width>
-        <height>1079</height>
+        <width>974</width>
+        <height>1187</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
@@ -123,7 +129,7 @@ QScrollArea{
          <property name="checked">
           <bool>false</bool>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
+         <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QGroupBox" name="groupBox_analysis_dbscan">
             <property name="title">
@@ -219,6 +225,294 @@ QScrollArea{
                </property>
                <property name="text">
                 <string>Export in .pdb</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_analysis_bayesian">
+            <property name="title">
+             <string>Bayesian</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_10">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_analysis_bayesian_rseqminlabel">
+               <property name="text">
+                <string>Rsequence min</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1" colspan="2">
+              <widget class="QSpinBox" name="spinBox_analysis_bayesian_rseqmin">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimum">
+                <number>10</number>
+               </property>
+               <property name="maximum">
+                <number>500</number>
+               </property>
+               <property name="value">
+                <number>30</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="3" rowspan="2">
+              <widget class="Line" name="line_4">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="4" colspan="2">
+              <widget class="QLabel" name="label_analysis_bayesian_rseqmaxlabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Rsequence max</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="6">
+              <widget class="QSpinBox" name="spinBox_analysis_bayesian_rseqmax">
+               <property name="minimum">
+                <number>10</number>
+               </property>
+               <property name="maximum">
+                <number>500</number>
+               </property>
+               <property name="value">
+                <number>200</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="7" rowspan="2">
+              <widget class="Line" name="line_5">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="8">
+              <widget class="QLabel" name="label_analysis_bayesian_rseqdifflabel">
+               <property name="text">
+                <string>Rsequence diff</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="9">
+              <widget class="QSpinBox" name="spinBox_analysis_bayesian_rseqdiff">
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>5000</number>
+               </property>
+               <property name="value">
+                <number>10</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="10" rowspan="2">
+              <widget class="Line" name="line_8">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="11">
+              <widget class="QLabel" name="label_analysis_bayesian_alphalabel">
+               <property name="text">
+                <string>Alpha</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="12">
+              <widget class="QSpinBox" name="spinBox_analysis_bayesian_alpha">
+               <property name="maximum">
+                <number>100000</number>
+               </property>
+               <property name="value">
+                <number>20</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="13" rowspan="2">
+              <widget class="Line" name="line_9">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="14">
+              <widget class="QCheckBox" name="checkBox_analysis_bayesian_save_all">
+               <property name="layoutDirection">
+                <enum>Qt::RightToLeft</enum>
+               </property>
+               <property name="text">
+                <string>Save all data</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_analysis_bayesian_thseqminlabel">
+               <property name="text">
+                <string>Thsequence min</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1" colspan="2">
+              <widget class="QSpinBox" name="spinBox_analysis_bayesian_thseqmin">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimum">
+                <number>5</number>
+               </property>
+               <property name="maximum">
+                <number>5000</number>
+               </property>
+               <property name="value">
+                <number>10</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="4" colspan="2">
+              <widget class="QLabel" name="label_analysis_bayesian_thseqmaxlabel">
+               <property name="text">
+                <string>Thsequence max</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="6">
+              <widget class="QSpinBox" name="spinBox_analysis_bayesian_thseqmax">
+               <property name="minimum">
+                <number>5</number>
+               </property>
+               <property name="maximum">
+                <number>5000</number>
+               </property>
+               <property name="value">
+                <number>500</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="8">
+              <widget class="QLabel" name="label_analysis_bayesian_thseqdifflabel">
+               <property name="text">
+                <string>Thsequence diff</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="9">
+              <widget class="QSpinBox" name="spinBox_analysis_bayesian_thseqdiff">
+               <property name="minimum">
+                <number>5</number>
+               </property>
+               <property name="maximum">
+                <number>5000</number>
+               </property>
+               <property name="value">
+                <number>10</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="11">
+              <widget class="QLabel" name="label_analysis_bayesian_pbackgroundlabel">
+               <property name="text">
+                <string>Pbackground</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="12">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_analysis_bayesian_pbackground">
+               <property name="maximum">
+                <double>1.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.010000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.500000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <widget class="QCheckBox" name="checkBox_analysis_bayesian_usehistogram">
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="text">
+                <string>Use histogram</string>
+               </property>
+               <property name="tristate">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2" colspan="3">
+              <widget class="QPushButton" name="pushButton_analysis_bayesian_choose_file">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="cursor">
+                <cursorShape>ArrowCursor</cursorShape>
+               </property>
+               <property name="mouseTracking">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Choose file</string>
+               </property>
+               <property name="checkable">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="5" colspan="5">
+              <widget class="QLineEdit" name="lineEdit_analysis_bayesian_histogramlinedit">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>1000</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="frame">
+                <bool>false</bool>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="placeholderText">
+                <string>Histogram file name</string>
                </property>
               </widget>
              </item>
@@ -1027,19 +1321,6 @@ QScrollArea{
          </layout>
         </widget>
        </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
       </layout>
      </widget>
     </widget>
@@ -1069,6 +1350,14 @@ QScrollArea{
     </layout>
    </item>
   </layout>
+  <action name="actionSelect_file">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>select_file</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

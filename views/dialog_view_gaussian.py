@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui\dialog_view_gaussian.ui'
 #
-# Created: Tue Feb 09 14:49:11 2016
-#      by: PyQt4 UI code generator 4.9.6
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -95,6 +94,8 @@ class Ui_Dialog_gaussian(object):
         self.horizontalLayout_4.addWidget(self.formGroupBox_2)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem)
+        self.formGroupBox.raise_()
+        self.formGroupBox_2.raise_()
         self.verticalLayout.addWidget(self.widget)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem1)

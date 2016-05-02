@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui\dialog_imageregistration.ui'
 #
-# Created: Tue Feb 09 14:49:11 2016
-#      by: PyQt4 UI code generator 4.9.6
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -37,7 +36,6 @@ class Ui_Dialog_imageregistration(object):
         self.widget = QtGui.QWidget(Dialog_imageregistration)
         self.widget.setObjectName(_fromUtf8("widget"))
         self.formLayout_2 = QtGui.QFormLayout(self.widget)
-        self.formLayout_2.setMargin(0)
         self.formLayout_2.setObjectName(_fromUtf8("formLayout_2"))
         self.gridLayout = QtGui.QGridLayout()
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))

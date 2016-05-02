@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui\dialog_tool_lut.ui'
 #
-# Created: Tue Feb 09 14:49:12 2016
-#      by: PyQt4 UI code generator 4.9.6
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -37,7 +36,6 @@ class Ui_Dialog_lut(object):
         self.widget = QtGui.QWidget(Dialog_lut)
         self.widget.setObjectName(_fromUtf8("widget"))
         self.horizontalLayout = QtGui.QHBoxLayout(self.widget)
-        self.horizontalLayout.setMargin(0)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.groupBox_3 = QtGui.QGroupBox(self.widget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Preferred)
@@ -53,7 +51,6 @@ class Ui_Dialog_lut(object):
         self.widget_4 = QtGui.QWidget(self.groupBox_3)
         self.widget_4.setObjectName(_fromUtf8("widget_4"))
         self.verticalLayout_6 = QtGui.QVBoxLayout(self.widget_4)
-        self.verticalLayout_6.setMargin(0)
         self.verticalLayout_6.setObjectName(_fromUtf8("verticalLayout_6"))
         self.widget_3 = QtGui.QWidget(self.widget_4)
         self.widget_3.setObjectName(_fromUtf8("widget_3"))
@@ -84,6 +81,7 @@ class Ui_Dialog_lut(object):
         self.verticalLayout_6.addLayout(self.horizontalLayout_5)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_6.addItem(spacerItem)
+        self.widget_3.raise_()
         self.verticalLayout_3.addWidget(self.widget_4)
         self.verticalLayout_storm_lut = QtGui.QVBoxLayout()
         self.verticalLayout_storm_lut.setObjectName(_fromUtf8("verticalLayout_storm_lut"))
@@ -103,7 +101,6 @@ class Ui_Dialog_lut(object):
         self.widget_5 = QtGui.QWidget(self.groupBox_2)
         self.widget_5.setObjectName(_fromUtf8("widget_5"))
         self.verticalLayout_4 = QtGui.QVBoxLayout(self.widget_5)
-        self.verticalLayout_4.setMargin(0)
         self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
         self.widget_2 = QtGui.QWidget(self.widget_5)
         self.widget_2.setObjectName(_fromUtf8("widget_2"))
@@ -145,19 +142,16 @@ class Ui_Dialog_lut(object):
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.formLayout = QtGui.QFormLayout(self.layoutWidget)
         self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
-        self.formLayout.setMargin(0)
         self.formLayout.setObjectName(_fromUtf8("formLayout"))
         self.layoutWidget1 = QtGui.QWidget(Dialog_lut)
         self.layoutWidget1.setGeometry(QtCore.QRect(0, 0, 2, 2))
         self.layoutWidget1.setObjectName(_fromUtf8("layoutWidget1"))
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.layoutWidget1)
-        self.verticalLayout_5.setMargin(0)
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
         self.layoutWidget2 = QtGui.QWidget(Dialog_lut)
         self.layoutWidget2.setGeometry(QtCore.QRect(0, 0, 2, 2))
         self.layoutWidget2.setObjectName(_fromUtf8("layoutWidget2"))
         self.horizontalLayout_4 = QtGui.QHBoxLayout(self.layoutWidget2)
-        self.horizontalLayout_4.setMargin(0)
         self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
 
         self.retranslateUi(Dialog_lut)

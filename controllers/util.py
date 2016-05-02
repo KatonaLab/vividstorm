@@ -20,6 +20,7 @@ class RunnableComponent(object):
         self.check_boxes = [widget for widget in all_config.check_boxes if str(widget.objectName()).find(self.name_prefix) != -1]
         self.combo_boxes = [widget for widget in all_config.combo_boxes if str(widget.objectName()).find(self.name_prefix) != -1]
         self.spin_boxes = [widget for widget in all_config.spin_boxes if str(widget.objectName()).find(self.name_prefix) != -1]
+        self.line_edits = [widget for widget in all_config.line_edits if str(widget.objectName()).find(self.name_prefix) != -1]
 
     def _init_config_values(self):
         all_setting_widgets = self.radio_buttons + self.check_boxes + self.combo_boxes + self.spin_boxes
@@ -35,6 +36,8 @@ class RunnableComponent(object):
             combo_box.currentIndexChanged.connect(partial(self._on_setting_changed, combo_box))
         for spin_box in self.spin_boxes:
             spin_box.valueChanged.connect(partial(self._on_setting_changed, spin_box))
+        for line_edit in self.line_edits:
+            line_edit.textChanged.connect(partial(self._on_setting_changed, line_edit))
 
     def setup(self, all_config):
         self._setup_components(all_config)
@@ -52,6 +55,8 @@ class RunnableComponent(object):
             setattr(self, setting_key, setting_widget.currentText())
         elif setting_widget_qt_type == 'QSpinBox' or setting_widget_qt_type == 'QDoubleSpinBox':
             setattr(self, setting_key, setting_widget.value())
+        elif setting_widget_qt_type == 'QLineEdit' :
+            setattr(self, setting_key, setting_widget.text())
 
     def run(self):
         pass

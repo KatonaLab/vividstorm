@@ -322,6 +322,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
         self.analyses.append(ExportCoordinatesTxtAnalysis('analysis_export_coords'))
         self.analyses.append(ExportCoordinatesPdbAnalysis('analysis_export_pdb'))
         self.analyses.append(QualityControlAnalysis('analysis_quality_control')) # appending new analysis
+        self.analyses.append(BayesianClusteringAnalysis('analysis_bayesian'))
         # self.analyses.append(NewAnalysis('analysis_new')) # appending new analysis
 
 
@@ -371,12 +372,25 @@ class AnalysisDialog(Ui_Dialog_analysis):
         self.spin_boxes = [getattr(self, obj_name) for obj_name in widgets if
                            (obj_name.find('spinBox') != -1 or obj_name.find('doubleSpinBox') != -1)]
         self.group_boxes = [getattr(self, obj_name) for obj_name in widgets if obj_name.find('groupBox') != -1]
+        self.line_edits = [getattr(self, obj_name) for obj_name in widgets if obj_name.find('lineEdit') != -1]
+
+    def choose_histogram_file(self):
+
+        if self.checkBox_analysis_bayesian_usehistogram.isChecked():
+            file_dialog = QtGui.QFileDialog()
+            title = "Open histogram file"
+            extension = "histogram file (*.txt)"
+            file_hist = QtGui.QFileDialog.getOpenFileName(file_dialog, title,
+                                                            "/home", extension)
+            print file_hist
+            self.lineEdit_analysis_bayesian_histogramlinedit.setText(file_hist)
 
 
     def _add_input_handlers(self):
         for group_box in self.group_boxes:
             group_box.toggled.connect(partial(self._on_setting_changed, group_box))
         self.pushButton_analysis_run.clicked.connect(lambda: self.run_analyses())
+        self.pushButton_analysis_bayesian_choose_file.clicked.connect(lambda: self.choose_histogram_file())
 
     def setup_conf_channel(self, channel_list, channels_visible):
         comboBox = self.comboBox_analysis_euclidean_between_channel_from_confocal

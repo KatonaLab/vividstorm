@@ -27,6 +27,9 @@ class Settings(object):
         self.combo_boxes = [getattr(main_window, obj_name) for obj_name in widgets if obj_name.find('comboBox') != -1 and obj_name.find(type_) != -1]
         self.spin_boxes = [getattr(main_window, obj_name) for obj_name in widgets if (obj_name.find('spinBox') != -1 or obj_name.find('doubleSpinBox') != -1) and obj_name.find(type_) != -1]
         self.group_boxes = [getattr(main_window, obj_name) for obj_name in widgets if obj_name.find('groupBox') != -1 and obj_name.find(type_) != -1]
+        self.line_edits = [getattr(main_window, obj_name) for obj_name in widgets if obj_name.find('lineEdit') != -1 and obj_name.find(type_) != -1]
+
+
 
     def _add_input_handlers(self):
         for push_button in self.push_buttons:
@@ -41,10 +44,13 @@ class Settings(object):
             spin_box.valueChanged.connect(partial(self._on_setting_changed, spin_box))
         for group_box in self.group_boxes:
             group_box.toggled.connect(partial(self._on_setting_changed, group_box))
+        for line_edit in self.line_edits:
+            line_edit.textChanged.connect(partial(self._on_setting_changed, line_edit))
+
 
     def _init_settings_values(self):
         all_setting_widgets = self.push_buttons + self.radio_buttons + self.check_boxes \
-                              + self.combo_boxes + self.spin_boxes + self.group_boxes
+                              + self.combo_boxes + self.spin_boxes + self.group_boxes + self.line_edits
         for setting_widget in all_setting_widgets:
             self._on_setting_changed(setting_widget, is_init=True)
 

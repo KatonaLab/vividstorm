@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui\dialog_tool_positioning.ui'
 #
-# Created: Tue Feb 09 14:49:12 2016
-#      by: PyQt4 UI code generator 4.9.6
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -37,7 +36,6 @@ class Ui_Dialog_positioning(object):
         self.widget = QtGui.QWidget(Dialog_positioning)
         self.widget.setObjectName(_fromUtf8("widget"))
         self.horizontalLayout = QtGui.QHBoxLayout(self.widget)
-        self.horizontalLayout.setMargin(0)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.groupBox_3 = QtGui.QGroupBox(self.widget)
         font = QtGui.QFont()
@@ -49,14 +47,14 @@ class Ui_Dialog_positioning(object):
         self.groupBox_3.setFlat(True)
         self.groupBox_3.setObjectName(_fromUtf8("groupBox_3"))
         self.verticalLayout_11 = QtGui.QVBoxLayout(self.groupBox_3)
-        self.verticalLayout_11.setSpacing(6)
         self.verticalLayout_11.setMargin(0)
+        self.verticalLayout_11.setSpacing(6)
         self.verticalLayout_11.setObjectName(_fromUtf8("verticalLayout_11"))
         self.widget_5 = QtGui.QWidget(self.groupBox_3)
         self.widget_5.setObjectName(_fromUtf8("widget_5"))
         self.horizontalLayout_6 = QtGui.QHBoxLayout(self.widget_5)
-        self.horizontalLayout_6.setSpacing(0)
         self.horizontalLayout_6.setMargin(0)
+        self.horizontalLayout_6.setSpacing(0)
         self.horizontalLayout_6.setObjectName(_fromUtf8("horizontalLayout_6"))
         self.verticalLayout_12 = QtGui.QVBoxLayout()
         self.verticalLayout_12.setContentsMargins(-1, 0, 0, -1)
@@ -87,8 +85,8 @@ class Ui_Dialog_positioning(object):
         self.widget_6 = QtGui.QWidget(self.groupBox_3)
         self.widget_6.setObjectName(_fromUtf8("widget_6"))
         self.horizontalLayout_8 = QtGui.QHBoxLayout(self.widget_6)
-        self.horizontalLayout_8.setSpacing(0)
         self.horizontalLayout_8.setMargin(0)
+        self.horizontalLayout_8.setSpacing(0)
         self.horizontalLayout_8.setObjectName(_fromUtf8("horizontalLayout_8"))
         self.horizontalSlider_2 = QtGui.QSlider(self.widget_6)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)

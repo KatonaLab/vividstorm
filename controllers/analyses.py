@@ -28,7 +28,12 @@ import pyqtgraph as pg
 import sys
 from PyQt4 import QtGui
 import fnmatch
-
+import igraph
+from sklearn.metrics.pairwise import pairwise_distances
+import analyses_bayesian
+import dialogs
+import warnings
+from thread import start_new_thread
 
 class Analysis(RunnableComponent):
     def __init__(self, *args, **kwargs):
@@ -2364,6 +2369,258 @@ class ExportCoordinatesVmdAnalysis(Analysis):
     def compute(self, points):
         pass
 
+
+
+
+class BayesianClusteringAnalysis(Analysis):
+
+    def __init__(self, *args, **kwargs):
+        super(BayesianClusteringAnalysis, self).__init__(*args, **kwargs)
+
+    Kclust = analyses_bayesian.Kclust
+    minus = analyses_bayesian.minus
+    plus = analyses_bayesian.plus
+    minus2 = analyses_bayesian.minus2
+    plus2 = analyses_bayesian.plus2
+    plus3 = analyses_bayesian.plus3
+    plus4 = analyses_bayesian.plus4
+    plus5 = analyses_bayesian.plus5
+    plus6 = analyses_bayesian.plus6
+    toroid = analyses_bayesian.toroid
+    mcgaussprec = analyses_bayesian.mcgaussprec
+    plabel = analyses_bayesian.plabel
+    scorewprec = analyses_bayesian.scorewprec
+
+    def compute(self, points):
+
+        print 'Bayesian_clustering_analysis'
+
+        self.computed_values_multiple = 'storm_file\tROI_tag\tchannel_ID\tcluster_ID\tNLP_per_cluster' \
+                                        '\tV_hull_per_cluster(um^3)\tmax_distance_per_cluster(um)\n'
+
+        coords = None
+        channel_nr = numpy.where(numpy.asarray(self.storm_channels_visible) == True)
+        visible_channel_nr = numpy.asarray(channel_nr)[0]
+
+        for m in visible_channel_nr:
+            if len(points[m]) > 0:
+                coords = numpy.empty((len(points[m]), 3), dtype=numpy.int)
+                sdvalues = numpy.empty((len(points[m]), 1), dtype=numpy.float)
+                coords[:, 0] = numpy.asarray(points[m])[:, 0]
+                coords[:, 1] = numpy.asarray(points[m])[:, 1]
+                coords[:, 2] = numpy.asarray(points[m])[:, 3]
+
+                coordsz= numpy.asarray(points[m])[:, 3]
+                sdvalues = numpy.asarray(points[m])[:, 2]
+            pbackground=self.analysis_bayesian_pbackground
+            rseq=numpy.arange(self.analysis_bayesian_rseqmin,self.analysis_bayesian_rseqmax+1, \
+                                  self.analysis_bayesian_rseqdiff)
+            thseq=numpy.arange(self.analysis_bayesian_thseqmin,self.analysis_bayesian_thseqmax+1, \
+                                   self.analysis_bayesian_thseqdiff)
+            alpha=self.analysis_bayesian_alpha
+            if self.analysis_bayesian_usehistogram:
+                with open(self.analysis_bayesian_histogramlinedit) as histfile:
+
+                    lines = histfile.readlines()
+
+                    histbins = lines[0].rstrip().split(',')
+                    for i in range(len(histbins)):
+                        histbins[i]=int(histbins[i])
+                    histvalues = lines[1].rstrip().split(',')
+                    for i in range(len(histvalues)):
+                        histvalues[i]=int(histvalues[i])
+                    if len(histbins) !=len(histvalues):
+                        raise ValueError('Histbins and histvalues must have the same size')
+
+            else:
+                histbins = [10, 30, 50, 70, 90, 110, 130, 150, 170, 190, 210, 230, 250, 270, 290, 310, 330, \
+                                350, 370, 390, 410, 430, 450, 470, 490, 510, 530, 550, 570, 590]
+                histvalues = [8, 57, 104, 130, 155, 168, 197, 205, 216, 175, 123, 91, 74, 32, 24, 22, 12, 11, \
+                                  6, 5, 3, 5, 1, 3, 0, 4, 0, 1, 1, 1]
+            xlim = []
+            ylim = []
+
+            xlim = numpy.array([min(coords[:, 0]), max(coords[:, 0])])
+            ylim = numpy.array([min(coords[:, 1]), max(coords[:, 1])])
+
+            minsd = histbins[0]
+            maxsd = histbins[len(histbins)-1]
+            useplabel=True
+            f = scipy.interpolate.interp1d(histbins, histvalues)
+            warnings.filterwarnings("ignore")
+
+
+            cst = scipy.integrate.quad(f, histbins[0], histbins[len(histbins)-1])[0]
+            def psd(self,sd):
+                if (f(sd)==0):
+                    return (math.log(0.0001)-math.log(cst))
+                else:
+                    return (math.log(f(sd))-math.log(cst))
+            hv=[]
+
+            svector=self.Kclust(pts=coords, xlim=xlim, ylim=ylim, rseq=numpy.arange(10, 591, 20), thseq=thseq, sds=sdvalues, psd=psd, minsd=minsd, \
+                            maxsd=maxsd, useplabel=useplabel, alpha=alpha, pb=pbackground, hv=hv)
+
+
+            histvalues = hv
+            f = scipy.interpolate.interp1d(histbins, histvalues)
+            cst = scipy.integrate.quad(f, histbins[0], histbins[len(histbins)-1])[0]
+
+            svector = self.Kclust(pts=coords, xlim=xlim, ylim=ylim, rseq=rseq, thseq=thseq, sds=sdvalues, psd=psd, minsd=minsd, maxsd=maxsd, \
+                                    useplabel=useplabel, alpha=alpha, pb=pbackground, hv=hv)
+
+            maxv = svector[0][2]
+
+            ind = 0
+            for i in range(len(svector)):
+                if svector[i][2] > maxv:
+                    maxv = svector[i][2]
+                    ind = i
+
+            ok = True
+            try:
+                a = svector[ind][3].membership
+            except:
+                ok = False
+                print ("All points belong to the background")
+
+            if ok:
+                r=svector[ind][0]
+                th=svector[ind][1]
+                A=svector[ind][4]
+                B=svector[ind][5]
+                Z=svector[ind][7]
+
+                counter=[]
+                memberships=[]
+
+                rs=[]
+                ths=[]
+                ss=[]
+                memberships.append(svector[ind][3].membership)
+                As = []
+                As.append(svector[ind][4])
+                all = []
+                all.append([svector[ind][2], svector[ind][3], svector[ind][4], svector[ind][5]])
+                rs.append(svector[ind][0])
+                ths.append(svector[ind][1])
+                ss.append(svector[ind][2])
+                counter.append(1)
+                for i in range(len(svector)):
+                    if svector[ind][2] == svector[i][2]:
+                        exist = False
+                        for j in range(len(memberships)):
+                            if svector[i][3] != 0:
+                                if numpy.array_equal(memberships[j],svector[i][3].membership) & numpy.array_equal(As[j],svector[i][4]):
+                                    exist=True
+                                    counter[j]=counter[j]+1
+                        if not exist:
+                            if svector[i][3] != 0:
+                                memberships.append(svector[i][3].membership)
+                                As.append(svector[i][4])
+                                rs.append(svector[i][0])
+                                ths.append(svector[i][1])
+                                ss.append(svector[i][2])
+                                all.append([svector[i][2], svector[i][3], svector[i][4], svector[i][5]])
+                                counter.append(1)
+
+                maxind = []
+                for i in range(len(counter)):
+                    if (counter[i]==max(counter)):
+                        maxind.append(i)
+
+                maxind = maxind[0]
+                for i in range(len(svector)):
+                    if svector[i][3] != 0:
+                        if memberships[maxind] == svector[i][3].membership:
+                            ind=i
+                            break
+
+                A0 = svector[ind][4]
+                B0 = svector[ind][5]
+                Z = svector[ind][7]
+                list = svector[ind][3]
+                ivector = []
+                for i in list:
+                    if (len(i)==1):
+                        for j in i:
+                            ivector.append(j)
+
+                ivector2 = []
+                avector = []
+                bvector = []
+                for j in range(len(ivector)):
+                    ivector2.append(svector[ind][3].membership[ivector[j]])
+                    avector.append(ivector[j])
+
+                clust_number = len(svector[ind][3])
+
+                vec = svector[ind][3].membership
+                clustnums=set(vec)
+                #svector[ind][3].membership=np.array([svector[ind][3].membership])
+                for i in range(len(ivector2)):
+                    vec.remove(ivector2[i])
+                    clust_number=clust_number-1
+                    clustnums.remove(ivector2[i])
+                A = numpy.delete(A0, avector)
+                B = numpy.delete(B0, avector)
+                if(len(vec)==0):
+                    ok=False;
+                    print ("All points belong to the background")
+
+            if ok:
+                for i in clustnums:
+                    el = vec.count(i)
+                    indexes = svector[ind][3][i]
+                    elements = []
+                    for j in indexes:
+                        elements.append([A0[j], B0[j], Z[j]])
+                    hull3D_volume = 0
+
+                    if len(elements) > 3:
+                        hull3D = scipy.spatial.ConvexHull(elements, incremental=False, qhull_options=None)
+                        # calculating volume
+                        simplices = numpy.column_stack((numpy.repeat(hull3D.vertices[0], hull3D.nsimplex), hull3D.simplices))
+                        tets = hull3D.points[simplices]
+                        hull3D_volume = numpy.sum(self.tetrahedron_volume(tets[:, 0], tets[:, 1], tets[:, 2], tets[:, 3]))
+                    maxdistance = 0
+                    for cm in range(len(elements)):
+                        for om in range(len(elements)):
+                            if self.EucDistance3D(elements[cm], elements[om]) > maxdistance:
+                                maxdistance = self.EucDistance3D(elements[cm], elements[om])
+                    self.computed_values_multiple += self.storm_file_name + '\t' + self.ROI_tag + '\t' + \
+                                                        self.storm_channel_list[m] + '\t' + str(i+1) + '\t' \
+                                                        + str(el) + '\t' + str(hull3D_volume/1000000000) + \
+                                                        '\t' + str(maxdistance/1000)+'\n'
+
+
+                if self.display_plots == True:
+
+                    colorlist = numpy.ones((len(vec), 3))
+
+                    for s in range(clust_number):
+                        inds = numpy.where(numpy.asarray(vec) == s + 1)
+                        assignedcolor = matplotlib.colors.hsv_to_rgb([(s / 1.0) / clust_number, 1.0, 1.0])
+                        colorlist[inds, :] = numpy.asarray(assignedcolor)
+
+                    fig=plt.figure(facecolor=(0, 0, 0), edgecolor=(0, 0, 0))
+                    fig.hold(True)
+                    fig.patch.set_facecolor((0, 0, 0))
+                    ax1=fig.add_subplot(111, axisbg='k', projection='3d', aspect='equal')
+                    ax1.grid(False)
+                    ax1.set_axis_off()
+                    ax1.set_frame_on(False)
+                    ax1.set_title('Bayesian clustering', color='w')
+                    ax1.scatter(A, B, c=numpy.asarray(colorlist), marker='o')
+                    ax1.set_xlabel('x coordinates [nm]', fontsize=15)
+                    ax1.set_ylabel('y coordinates [nm]', fontsize=15)
+                    plt.setp(ax1.get_xticklabels(), rotation='vertical', fontsize=14)
+                    plt.setp(ax1.get_yticklabels(), fontsize=14)
+                    plt.gca().invert_yaxis()
+                    plt.gca().set_aspect('equal')
+                    plt.show()
+
+        print "Bayesian_clustering_analysis ready"
 
 
 
