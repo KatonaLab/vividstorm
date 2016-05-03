@@ -23,7 +23,7 @@ class RunnableComponent(object):
         self.line_edits = [widget for widget in all_config.line_edits if str(widget.objectName()).find(self.name_prefix) != -1]
 
     def _init_config_values(self):
-        all_setting_widgets = self.radio_buttons + self.check_boxes + self.combo_boxes + self.spin_boxes
+        all_setting_widgets = self.radio_buttons + self.check_boxes + self.combo_boxes + self.spin_boxes + self.line_edits
         for setting_widget in all_setting_widgets:
             self._on_setting_changed(setting_widget, is_init=True)
 

@@ -236,4 +236,3 @@ class ConfocalImage(MicroscopeImage):
         self.ConfocalMetaData['SizeX'] = px
         self.ConfocalMetaData['SizeY'] = px
         self.ConfocalMetaData['SizeZ'] = px
-

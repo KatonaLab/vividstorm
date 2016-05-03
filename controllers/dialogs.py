@@ -36,6 +36,8 @@ from default_config import version as version_num
 from analyses import *
 from scipy import ndimage
 from scipy.interpolate import splprep, splev
+import images
+import settings
 
 class AboutDialog(Ui_Dialog_about):
     def __init__(self, *args, **kwargs):
@@ -307,6 +309,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
         self.roi_tag = None
         self.roi_perimeter = None
         self.roi_area = None
+        self.main = None
 
         self.analyses = []
         self.analyses.append(NlpAnalysis('analysis_nlp'))
@@ -335,7 +338,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
         self.roi_tag = roi_tag
         self.roi_perimeter = roi_perimeter
         self.roi_area = roi_area
-        
+
+
         for analysis in self.analyses:
             analysis.setup(self)
             analysis.setup_data(
@@ -378,12 +382,24 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
         if self.checkBox_analysis_bayesian_usehistogram.isChecked():
             file_dialog = QtGui.QFileDialog()
-            title = "Open histogram file"
+            title = "Choose histogram file"
             extension = "histogram file (*.txt)"
             file_hist = QtGui.QFileDialog.getOpenFileName(file_dialog, title,
                                                             "/home", extension)
-            print file_hist
             self.lineEdit_analysis_bayesian_histogramlinedit.setText(file_hist)
+
+    def choose_batch_analyses_folder(self):
+
+        if self.radioButton_analysis_batch.isChecked():
+            folder_dialog = QtGui.QFileDialog()
+            folder_dialog.setFileMode(QtGui.QFileDialog.Directory)
+            folder_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
+            title = "Choose folder"
+            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, \
+                                                                       "/home")
+
+            self.lineEdit_analysis_folder_name.setText(batch_folder_name)
+
 
 
     def _add_input_handlers(self):
@@ -391,6 +407,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
             group_box.toggled.connect(partial(self._on_setting_changed, group_box))
         self.pushButton_analysis_run.clicked.connect(lambda: self.run_analyses())
         self.pushButton_analysis_bayesian_choose_file.clicked.connect(lambda: self.choose_histogram_file())
+        self.pushButton_analysis_batch_choose_folder.clicked.connect(lambda: self.choose_batch_analyses_folder())
+
 
     def setup_conf_channel(self, channel_list, channels_visible):
         comboBox = self.comboBox_analysis_euclidean_between_channel_from_confocal
@@ -412,45 +430,90 @@ class AnalysisDialog(Ui_Dialog_analysis):
                         if analysis.name_prefix == setting_key:
                             analysis.enabled = widget.isChecked()
 
-    def run_analyses(self):
+    def run_batch_analyses(self):
+        print "Batch analyses"
         self.main_window.status_bar.showMessage('Running analyses, please wait...')
+        allfiles = os.listdir(self.lineEdit_analysis_folder_name.text())
+        for filename in allfiles:
+            print filename
 
-        values_simple = []
-        for analysis in self.analyses:
-            if analysis.enabled:
-                StormData_to_analyse = self.StormData_to_analyse
-                dimensions = '3d' if self.main_window.storm_settings.storm_config_fileheader_z else '2d'
-                channels_num = len([ch for ch in self.main_window.viewer.display.StormChannelVisible if ch])
-                values = analysis.run(
-                    StormData_to_analyse,
-                    channels_num,
-                    dimensions
-                )
-                values_simple.append(values)
-        self.write_results_common_to_file(values_simple)
+            storm_image = images.StormImage(filename)
+            storm_image.coords_cols = (self.main_window.storm_settings.storm_config_fileheader_x,\
+                                       self.main_window.storm_settings.storm_config_fileheader_y,\
+                                       self.main_window.storm_settings.storm_config_fileheader_z)
+            storm_image.other_cols = (
+                self.main_window.storm_settings.storm_config_fileheader_localization_precision,
+                self.main_window.storm_settings.storm_config_fileheader_channel_name,
+                self.main_window.storm_settings.storm_config_fileheader_photon,
+                self.main_window.storm_settings.storm_config_fileheader_frame
+            )
+            storm_image.file_path = self.lineEdit_analysis_folder_name.text()+"/"+filename
+            storm_image.parse()
 
-        num = str(self.main_window.storm_settings.get_roi_counter())
-        if type(self.analyses[0].ROI).__name__ == 'EllipseRoi':
-            self.analyses[0].ROI.ChangeName("ellipseROI_"+num)
-        elif type(self.analyses[0].ROI).__name__ == 'CircleRoi':
-            self.analyses[0].ROI.ChangeName("circleROI_"+num)
-        elif type(self.analyses[0].ROI).__name__ == 'FreehandRoi':
-            self.analyses[0].ROI.ChangeName("freehandROI_"+num)   
-        elif type(self.analyses[0].ROI).__name__ == 'ActiveContourRoi':
-            self.analyses[0].ROI.ChangeName("activeContourROI_"+num)               
-        self.main_window.storm_settings.clear_rois()
-        self.main_window.storm_settings.add_roi(self.analyses[0].ROI)
-       
-        
-        
-        StormFileName=''
-        if self.main_window.viewer.current_storm_image!=None:
-                StormFileName=str.split(self.main_window.viewer.current_storm_image.file_path,os.sep)[-1]
-        ConfocalFileName='' 
-        if self.main_window.viewer.current_confocal_image!=None:  
-                ConfocalFileName=str.split(self.main_window.viewer.current_confocal_image.file_path,os.sep)[-1]
-        self.main_window.status_bar.showMessage('Ready '+'StormFile:'+StormFileName+' ConfocalFile:'+ConfocalFileName)
+
+            values_simple = []
+            for analysis in self.analyses:
+                if analysis.enabled:
+
+                    StormData_to_analyse = storm_image.StormData
+
+                    dimensions = '3d' if self.main_window.storm_settings.storm_config_fileheader_z else '2d'
+                    channels_num = len([ch for ch in self.main_window.viewer.display.StormChannelVisible if ch])
+                    values = analysis.run(
+                        StormData_to_analyse,
+                        channels_num,
+                        dimensions
+                    )
+                    values_simple.append(values)
+
+            self.write_results_common_to_file(values_simple)
+        print "Batch analyses ready"
         self.scrollAreaWidgetContents.window().close()
+
+
+
+    def run_analyses(self):
+        if self.radioButton_analysis_single.isChecked():
+            self.main_window.status_bar.showMessage('Running analyses, please wait...')
+
+            values_simple = []
+            for analysis in self.analyses:
+                if analysis.enabled:
+                    StormData_to_analyse = self.StormData_to_analyse
+                    dimensions = '3d' if self.main_window.storm_settings.storm_config_fileheader_z else '2d'
+                    channels_num = len([ch for ch in self.main_window.viewer.display.StormChannelVisible if ch])
+                    values = analysis.run(
+                        StormData_to_analyse,
+                        channels_num,
+                        dimensions
+                    )
+                    values_simple.append(values)
+            self.write_results_common_to_file(values_simple)
+
+            num = str(self.main_window.storm_settings.get_roi_counter())
+            if type(self.analyses[0].ROI).__name__ == 'EllipseRoi':
+                self.analyses[0].ROI.ChangeName("ellipseROI_"+num)
+            elif type(self.analyses[0].ROI).__name__ == 'CircleRoi':
+                self.analyses[0].ROI.ChangeName("circleROI_"+num)
+            elif type(self.analyses[0].ROI).__name__ == 'FreehandRoi':
+                self.analyses[0].ROI.ChangeName("freehandROI_"+num)
+            elif type(self.analyses[0].ROI).__name__ == 'ActiveContourRoi':
+                self.analyses[0].ROI.ChangeName("activeContourROI_"+num)
+            self.main_window.storm_settings.clear_rois()
+            self.main_window.storm_settings.add_roi(self.analyses[0].ROI)
+
+
+
+            StormFileName=''
+            if self.main_window.viewer.current_storm_image!=None:
+                    StormFileName=str.split(self.main_window.viewer.current_storm_image.file_path,os.sep)[-1]
+            ConfocalFileName=''
+            if self.main_window.viewer.current_confocal_image!=None:
+                    ConfocalFileName=str.split(self.main_window.viewer.current_confocal_image.file_path,os.sep)[-1]
+            self.main_window.status_bar.showMessage('Ready '+'StormFile:'+StormFileName+' ConfocalFile:'+ConfocalFileName)
+            self.scrollAreaWidgetContents.window().close()
+        else:
+            self.run_batch_analyses()
 
 
     def write_results_common_to_file(self, computed_values_simple):
@@ -481,6 +544,9 @@ class AnalysisDialog(Ui_Dialog_analysis):
         f.write(firstline[:-1] + '\n')
         f.write(secondline[:-1]+ '\n')
         f.close()
+
+
+
 
 class ImageRegistrationDialog(Ui_Dialog_imageregistration):
     def __init__(self, *args, **kwargs):
