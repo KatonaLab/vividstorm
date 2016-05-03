@@ -430,6 +430,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
                         if analysis.name_prefix == setting_key:
                             analysis.enabled = widget.isChecked()
 
+
     def run_batch_analyses(self):
         print "Batch analyses"
         self.main_window.status_bar.showMessage('Running analyses, please wait...')
