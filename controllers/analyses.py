@@ -34,6 +34,8 @@ import analyses_bayesian
 import dialogs
 import warnings
 from thread import start_new_thread
+import images
+
 
 class Analysis(RunnableComponent):
     def __init__(self, *args, **kwargs):
@@ -134,9 +136,11 @@ class Analysis(RunnableComponent):
         pass
 
     def _write_results_to_file(self, save_all_data, export_data):
+
         # write to the own file of the given analyse, complex values
         if save_all_data:
             f = open(self.output_file, 'w')
+
             f.write(str(self.computed_values_multiple) + '\n')
             f.close()
 
@@ -147,9 +151,52 @@ class Analysis(RunnableComponent):
                 f.write(line + '\n')
             f.close()
 
+    def _write_results_to_file_batch(self, save_all_data, export_data, filename):
 
-    def run(self, points, channels_num, dimensions):
-        self.display_plots=self.DisplayPlotCheckBox.isChecked()
+
+        self.output_file = filename[:-4] + "_" + type(self).__name__ + '.' + self.output_file_extension
+        self.output_file_export = filename[:-4] + "_" + type(self).__name__ + '_batch.' + self.output_file_export_extension
+        # write to the own file of the given analyse, complex values
+        if save_all_data:
+            f = open(self.output_file, 'w')
+
+            f.write(str(self.computed_values_multiple) + '\n')
+            f.close()
+
+        if export_data:
+            # Save the exported data file
+            f = open(self.output_file_export, 'w')
+            for line in self.computed_values_export:
+                f.write(line + '\n')
+            f.close()
+
+    def run_batch(self, points, channels_num, dimensions, filename, roi_tag, confocal_image_name, offset, confocal_image,meta):
+        index = str(filename).find("results")+8
+        self.storm_file_name = filename[index:-4]
+        self.storm_file_path = str(filename)
+        self.ROI_tag = roi_tag
+
+        if not confocal_image_name == "":
+
+            self.confocal_offset[1] = offset[0]/1000/self.StormDisplay.ConfocalMetaData['SizeX']*self.StormDisplay.ConfocalSizeMultiplier
+            self.confocal_offset[0] = offset[1]/1000/self.StormDisplay.ConfocalMetaData['SizeY']*self.StormDisplay.ConfocalSizeMultiplier
+            self.confocal_file_name = confocal_image_name
+            self.confocal_image = confocal_image
+            self.ConfocalMetaData = meta
+            self.StormDisplay.AddConfocalData(confocal_image)
+
+
+
+
+        """
+        if confocal_image_name != "":
+            .confocal_image = images.ConfocalImage(confocal_image_name)
+
+            self.confocal_image.parse_batch()
+
+            self.confocal_offset = offset
+        """
+        self.display_plots = self.DisplayPlotCheckBox.isChecked()
         if channels_num >= self.requirements_channels_num_min and dimensions in self.requirements_dimensions_num_list_any:
             self.computed_values_simple = []
             self.compute(points)
@@ -160,6 +207,30 @@ class Analysis(RunnableComponent):
                 save_all_data = getattr(self, self.name_prefix + '_save_all')
             if self.computed_values_export is not None:
                 export_data = getattr(self, self.name_prefix + '_export_' + self.output_file_export_extension)
+
+
+            self._write_results_to_file_batch(save_all_data, export_data,filename)
+            self.computed_values_multiple = ""
+            return self.computed_values_simple
+        else:
+            print str(type(self).__name__) + ' analysis requirements are not met!'
+            return None
+
+    def run(self, points, channels_num, dimensions):
+
+        self.display_plots = self.DisplayPlotCheckBox.isChecked()
+        if channels_num >= self.requirements_channels_num_min and dimensions in self.requirements_dimensions_num_list_any:
+            self.computed_values_simple = []
+            self.compute(points)
+
+            save_all_data = False
+            export_data = False
+            if self.computed_values_multiple is not None:
+                save_all_data = getattr(self, self.name_prefix + '_save_all')
+            if self.computed_values_export is not None:
+                export_data = getattr(self, self.name_prefix + '_export_' + self.output_file_export_extension)
+
+
             self._write_results_to_file(save_all_data, export_data)
 
             return self.computed_values_simple
@@ -1041,6 +1112,7 @@ class DBScanAnalysis(Analysis):
         print 'DBSCAN_analysis'
 
 
+
         # Big output file header
         self.computed_values_multiple = 'storm_file\tROI_tag\tchannel_ID\tcluster_ID\tNLP_per_cluster' \
                                         '\tV_hull_per_cluster(um^3)\tmax_distance_per_cluster(um)\n'
@@ -1361,6 +1433,10 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
 
     def compute(self, points):
         print "EuclideanDistanceBetweenChannelAnalysis"
+        print "confocal offset"
+        print self.confocal_offset
+        print self.ROI_tag
+        print self.ROI
         base_channel_nr = self.visible_storm_channel_names.index(
                 self.analysis_euclidean_between_channel_minimum_dist)
         from_channel_nr = self.visible_storm_channel_names.index(self.analysis_euclidean_between_channel_from)
@@ -1371,6 +1447,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
             channel=int(self.analysis_euclidean_between_channel_from_confocal)
             channelstr=str(channel)
             img=self.StormDisplay.ConfChannelToShow[channel]
+
 
             im=scipy.ndimage.zoom(img,(0.1,0.1),order=0)/ 255.0
             #fig2 = plt.figure(facecolor=(0, 0, 0), edgecolor=(0, 0, 0))
@@ -1386,10 +1463,23 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 pix_size=self.ConfocalMetaData['SizeX']*1000 #in nm
                 offset=[self.confocal_offset[1]/ConfocalSizeMultiplier, self.confocal_offset[0]/ConfocalSizeMultiplier]
 
+                print "data"
+                print pix_size
+                print offset
+                print ConfocalSizeMultiplier
                 base_coords = numpy.empty((len(points[base_channel_nr]), 3), dtype=numpy.float)
                 base_coords[:, 0] = (numpy.asarray(points[base_channel_nr])[:, 0])/pix_size-offset[0]
                 base_coords[:, 1] = (numpy.asarray(points[base_channel_nr])[:, 1])/pix_size-offset[1]
                 base_coords[:, 2] = numpy.asarray(points[base_channel_nr])[:, 3]/pix_size
+                print "points"
+                print numpy.asarray(points[base_channel_nr])[:, 0]
+                print numpy.asarray(points[base_channel_nr])[:, 1]
+                print numpy.asarray(points[base_channel_nr])[:, 3]
+                print "base coords"
+                print base_coords
+                print "offset"
+                print offset
+                print ConfocalSizeMultiplier
 
                 image_max = ndimage.maximum_filter(im, size=3, mode='constant')
                 maxima = (im == image_max)
@@ -1404,6 +1494,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 coordinates=numpy.copy(xy_switched)
                 coordinates[:,1]=xy_switched[:,0]
                 coordinates[:,0]=xy_switched[:,1]
+
 
                 ## display results
                 fig = plt.figure(facecolor=(0, 0, 0), edgecolor=(0, 0, 0))
@@ -1422,7 +1513,14 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 boundaries[1]=numpy.amax(base_coords[:, 0])
                 boundaries[2]=numpy.amin(base_coords[:, 1])
                 boundaries[3]=numpy.amax(base_coords[:, 1])
+                print "coordinates"
+                print coordinates
+                print len(coordinates)
+                print self.ConfocalMetaData
 
+
+                print "boundaries"
+                print boundaries
                 # deleting local maxima which have a bigger distance from the bouton than the 2*threshold
 
                 distant_inds = numpy.where(numpy.asarray(coordinates[:,0]) < (boundaries[0]-2*distance_threshold))
@@ -1437,6 +1535,8 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 distant_inds = numpy.where(numpy.asarray(coordinates[:,1]) > (boundaries[3]+2*distance_threshold))
                 coordinates = numpy.delete(coordinates, distant_inds, 0)
 
+                print "coordinates2"
+                print coordinates
                 near_coordinates=[]
 
                 for nlg_coord in coordinates:
@@ -1467,7 +1567,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
 
                     axes.axis('off')
                     axes.set_title('Peak local max')
-
+                    #1175.8123100224311, 639.01
                     from_coords = numpy.empty((len(ext_near_coords), 3), dtype=numpy.float)
                     from_coords[:, 0] = (ext_near_coords[:, 0]+offset[0]+0.5)*pix_size
                     from_coords[:, 1] = (ext_near_coords[:, 1]+offset[1]+0.5)*pix_size
@@ -1520,6 +1620,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
             varNN = scipy.stats.variation(NNvector / 1000.0, axis=0)
 
             # Creating big outfile
+
             for i in range(len(NNvector)):
                 self.computed_values_multiple += self.storm_file_name + '\t' + self.ROI_tag + '\t' \
                                                   + \
@@ -2180,10 +2281,19 @@ class ExportCoordinatesTxtAnalysis(Analysis):
     def compute(self, points):
         print "ExportCoordinatesTxtAnalysis"
 
-        infilename = self.storm_file_path
-        outfilename = os.path.join(
-            self.working_directory,
-            self.storm_file_name + '_' + self.ROI_tag + '_RoiCoords.txt' )
+        if str(self.storm_file_path).find("results") != -1:
+            index = str(self.storm_file_path).find("results")
+            infilename = str(self.storm_file_path)[:index]+str(self.storm_file_path)[index+8:]
+            outfilename = self.storm_file_path[:-4]+"_batch.txt"
+            print "export"
+            print infilename
+            print self.storm_file_path
+            print self.storm_file_name
+        else:
+            infilename = self.storm_file_path
+            outfilename = os.path.join(
+                self.working_directory,
+                str(self.storm_file_name + '_' + self.ROI_tag + '_RoiCoords.txt'))
 
         f_in = open(infilename, 'r')
         f_out = open(outfilename, 'w')
@@ -2236,7 +2346,7 @@ class ExportCoordinatesTxtAnalysis(Analysis):
                 f_roi.write('confocal offset (nm)\n'+str(offset[0]*1000.0*self.StormDisplay.ConfocalMetaData['SizeX'])+
                             '\t'+str(offset[1]*1000.0*self.StormDisplay.ConfocalMetaData['SizeX'])+'\n')
             else:
-                f_roi.write('confocal offset (nm)\n'+str(0)+
+                f_roi.write('confocal offset (nm)\n'+str(0) +
                             '\t'+str(0)+'\n')
 
 
@@ -2396,7 +2506,7 @@ class BayesianClusteringAnalysis(Analysis):
         print 'Bayesian_clustering_analysis'
 
         self.computed_values_multiple = 'storm_file\tROI_tag\tchannel_ID\tcluster_ID\tNLP_per_cluster' \
-                                        '\tV_hull_per_cluster(um^3)\tmax_distance_per_cluster(um)\n'
+                                        '\tV_hull_per_cluster(um^3)\tmax_distance_per_cluster(um)\tbest_radius(nm)\tbest_threshold\n'
 
         coords = None
         channel_nr = numpy.where(numpy.asarray(self.storm_channels_visible) == True)
@@ -2476,7 +2586,7 @@ class BayesianClusteringAnalysis(Analysis):
                 if svector[i][2] > maxv:
                     maxv = svector[i][2]
                     ind = i
-
+            
             ok = True
             try:
                 a = svector[ind][3].membership
@@ -2528,14 +2638,14 @@ class BayesianClusteringAnalysis(Analysis):
                 for i in range(len(counter)):
                     if (counter[i]==max(counter)):
                         maxind.append(i)
-
+                """
                 maxind = maxind[0]
                 for i in range(len(svector)):
                     if svector[i][3] != 0:
                         if memberships[maxind] == svector[i][3].membership:
                             ind=i
                             break
-
+                """
                 A0 = svector[ind][4]
                 B0 = svector[ind][5]
                 Z = svector[ind][7]
@@ -2564,6 +2674,7 @@ class BayesianClusteringAnalysis(Analysis):
                     clustnums.remove(ivector2[i])
                 A = numpy.delete(A0, avector)
                 B = numpy.delete(B0, avector)
+
                 if(len(vec)==0):
                     ok=False;
                     print ("All points belong to the background")
@@ -2591,9 +2702,17 @@ class BayesianClusteringAnalysis(Analysis):
                     self.computed_values_multiple += self.storm_file_name + '\t' + self.ROI_tag + '\t' + \
                                                         self.storm_channel_list[m] + '\t' + str(i+1) + '\t' \
                                                         + str(el) + '\t' + str(hull3D_volume/1000000000) + \
-                                                        '\t' + str(maxdistance/1000)+'\n'
+                                                        '\t' + str(maxdistance/1000)
+                    if i==0:
+                        self.computed_values_multiple += '\t' + str(svector[ind][0]) + '\t' + str(svector[ind][1]) + '\n'
+                    else:
+                        self.computed_values_multiple += '\n'
 
 
+
+
+                #print svector[ind][0]
+                #print svector[ind][1]
                 if self.display_plots == True:
 
                     colorlist = numpy.ones((len(vec), 3))

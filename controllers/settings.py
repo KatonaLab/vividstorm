@@ -115,6 +115,7 @@ class StormSettings(Settings):
         filtered_points = copy(points)
         for filter_ in self.filters:
             if filter_.enabled:
+                print filter_.name_prefix
                 filtered_points = filter_.run(filtered_points)
         return filtered_points
 

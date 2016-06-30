@@ -462,7 +462,6 @@ class StormDisplay(object):
         img=self.ConfChannelToShow
         #print img.shape
 
-        print offset
 
         zoomout=1.0/self.main_window.viewer.display.ConfocalSizeMultiplier
         resizedim=scipy.ndimage.zoom(img,(1,zoomout,zoomout),order=0)

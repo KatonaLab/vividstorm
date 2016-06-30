@@ -168,6 +168,61 @@ class ConfocalImage(MicroscopeImage):
         self.ConfocalData = []
         self.ConfocalMetaData = {}
 
+    def parse_batch(self):
+        calibration_px = 0.078
+        self.isParsingNeeded = False
+        self.ConfocalData = []
+        self.ConfocalMetaData = {}
+        if calibration_px:
+           self.set_calibration(calibration_px)
+        with tifffile.TiffFile(self.file_path) as tif:
+            # get metadata
+            imageDesc = tif[0].image_description
+            try:  #if we contain information in the image descriptor
+                    root = XMLET.fromstring(imageDesc)
+                    for L1 in root:
+                        if L1.tag.split('}')[1] == 'Image':
+                            for L2 in L1:
+                                if L2.tag.split('}')[1] == 'Pixels':
+                                    if float(L2.attrib['PhysicalSizeX']) !=1.0:
+                                        self.ConfocalMetaData['SizeC'] = float(L2.attrib['SizeC'])
+
+                                        self.ConfocalMetaData['SizeX'] = float(L2.attrib['PhysicalSizeX'])
+                                        self.ConfocalMetaData['SizeY'] = float(L2.attrib['PhysicalSizeY'])
+                                        self.ConfocalMetaData['SizeZ'] = float(L2.attrib['PhysicalSizeZ'])
+
+            except:
+                    pass
+            #read image data
+            self.ConfocalData = tif.asarray()
+            # confocaldata first dimensions z channel, color channels, than data
+            ConfShape = self.ConfocalData.shape
+            ConfDim = len(self.ConfocalData.shape)
+            if ConfDim == 4:
+                self.ConfocalMetaData['ChannelNum'] = int(ConfShape[1])
+            if ConfDim == 3:
+                if 'SizeC' in self.ConfocalMetaData:
+                    self.ConfocalMetaData['ChannelNum'] = int(self.ConfocalMetaData['SizeC'])
+                else:
+                    self.ConfocalMetaData['ChannelNum'] = 1
+            if ConfDim == 2:
+                self.ConfocalMetaData['ChannelNum'] = 1
+            #set the z channel to the middle of the stacks
+            NumOfZSlices=0
+            # more Zchannels and color channels
+            if len(self.ConfocalData.shape) > 3:
+                    NumOfZSlices=self.ConfocalData.shape[0]
+            elif len(self.ConfocalData.shape) > 2 and self.ConfocalMetaData['ChannelNum'] == 1:
+                    #z channels only
+                    NumOfZSlices=self.ConfocalData.shape[0]
+            elif len(self.ConfocalData.shape) > 2 and self.ConfocalMetaData['ChannelNum'] > 1:
+                    #color channels only
+                    NumOfZSlices=1
+            else:
+                    #a single tif image
+                    NumOfZSlices=1
+
+
     def parse(self, calibration_px, main_window, ApplyButton=False):
         self.isParsingNeeded = False
         self.ConfocalData = []
