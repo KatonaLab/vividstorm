@@ -1151,21 +1151,21 @@ class DBScanAnalysis(Analysis):
 
                 scalefactor = 50
 
+                X=numpy.asarray(clusters_wo_noise)[:, 0]
+                Y=numpy.asarray(clusters_wo_noise)[:, 1]
+                Z=numpy.asarray(clusters_wo_noise)[:, 2]
+
                 if m == 0:
-                    axes.scatter(numpy.asarray(clusters_wo_noise)[:, 0], numpy.asarray(clusters_wo_noise)[:, 1],
-                                 zs=numpy.asarray(clusters_wo_noise)[:, 2], zdir='z', s=scalefactor * 2,
+                    axes.scatter(X,Y,zs=Z, zdir='z', s=scalefactor * 2,
                                  c=numpy.asarray(colorlist), marker='.')
                 elif m == 1:
-                    axes.scatter(numpy.asarray(clusters_wo_noise)[:, 0], numpy.asarray(clusters_wo_noise)[:, 1],
-                                 zs=numpy.asarray(clusters_wo_noise)[:, 2], zdir='z', s=scalefactor,
+                    axes.scatter(X,Y,zs=Z, zdir='z', s=scalefactor,
                                  c=numpy.asarray(colorlist), marker='s')
                 elif m == 2:
-                    axes.scatter(numpy.asarray(clusters_wo_noise)[:, 0], numpy.asarray(clusters_wo_noise)[:, 1],
-                                 zs=numpy.asarray(clusters_wo_noise)[:, 2], zdir='z', s=scalefactor,
+                    axes.scatter(X,Y,zs=Z, zdir='z', s=scalefactor,
                                  c=numpy.asarray(colorlist), marker='V')
                 else:
-                    axes.scatter(numpy.asarray(clusters_wo_noise)[:, 0], numpy.asarray(clusters_wo_noise)[:, 1],
-                                 zs=numpy.asarray(clusters_wo_noise)[:, 2], zdir='z', s=scalefactor,
+                    axes.scatter(X,Y,zs=Z, zdir='z', s=scalefactor,
                                  c=numpy.asarray(colorlist), marker='D')
                 # Saving clustered coordinates to PDB file
 
@@ -1185,12 +1185,25 @@ class DBScanAnalysis(Analysis):
         if self.display_plots == True:
             # ylim=axes.get_ylim()
             # axes.set_ylim(ylim[1], ylim[0])
-            if coords!=None:
+            if len(X)>0:
+
                 axes.elev =- 96
                 axes.azim =- 86
                 axes.dist = 5
                 #plt.ion()
+
+                max_range = numpy.array([X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min()]).max() / 2.0
+
+                mid_x = (X.max() + X.min()) * 0.5
+                mid_y = (Y.max() + Y.min()) * 0.5
+                mid_z = (Z.max() + Z.min()) * 0.5
+                axes.set_xlim(mid_x - max_range, mid_x + max_range)
+                axes.set_ylim(mid_y - max_range, mid_y + max_range)
+                axes.set_zlim(mid_z - max_range, mid_z + max_range)
+
                 plt.show()
+            else:
+                print "not enough clustered points for visualization"
 
         else:
             plt.close("all")
