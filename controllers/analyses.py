@@ -89,6 +89,7 @@ class Analysis(RunnableComponent):
                    confocal_channels_visible, confocal_channels_colors,
                    z_position, confocal_image, confocal_meta_data,
                    ROI, ROI_tag, roi_perimeter, roi_area, confocal_offset, display_plots, euc_conf, StormDisplay):
+
         self.storm_channel_list=storm_channel_list
         self.storm_channels_visible = storm_channels_visible
         self.storm_channels_colors = storm_channels_colors
@@ -132,6 +133,8 @@ class Analysis(RunnableComponent):
             + self.output_file_export_extension
         )
 
+
+
     def compute(self, points):
         pass
 
@@ -171,11 +174,18 @@ class Analysis(RunnableComponent):
             f.close()
 
     def run_batch(self, points, channels_num, dimensions, filename, roi_tag, confocal_image_name, offset, confocal_image,meta):
-        index = str(filename).find("results")+8
-        self.storm_file_name = filename[index:-4]
-        self.storm_file_path = str(filename)
-        self.ROI_tag = roi_tag
+        if str(filename).find("Results") == -1:
+            pass
+        else:
+            index = str(filename).find("results")+8
+            self.storm_file_name = filename[index:-12]
+            self.storm_file_path = str(filename)
+            print self.storm_file_name
+            print self.storm_file_path
+            print filename
 
+        self.ROI_tag = roi_tag
+        self.computed_values_multiple=None
         if not confocal_image_name == "":
 
             self.confocal_offset[1] = offset[0]/1000/self.StormDisplay.ConfocalMetaData['SizeX']*self.StormDisplay.ConfocalSizeMultiplier
@@ -184,7 +194,11 @@ class Analysis(RunnableComponent):
             self.confocal_image = confocal_image
             self.ConfocalMetaData = meta
             self.StormDisplay.AddConfocalData(confocal_image)
-
+        else:
+            self.confocal_image = None
+            self.confocal_file_name = None
+            self.ConfocalMetaData = None
+            self.confocal_offset = None
 
 
 
@@ -1183,6 +1197,7 @@ class DBScanAnalysis(Analysis):
                     nlp_per_cluster = len(cluster)
                     # calculating 3D hulls and volumes for clusters
                     hull3D_volume = 0
+
                     if c > 0:
                         if len(cluster) > 3:
                             hull3D = scipy.spatial.ConvexHull(cluster[:, :3], incremental=False, qhull_options=None)
@@ -1434,9 +1449,11 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
     def compute(self, points):
         print "EuclideanDistanceBetweenChannelAnalysis"
         print "confocal offset"
+        print self.confocal_file_name
         print self.confocal_offset
-        print self.ROI_tag
-        print self.ROI
+        print self.StormDisplay.ConfocalData
+
+
         base_channel_nr = self.visible_storm_channel_names.index(
                 self.analysis_euclidean_between_channel_minimum_dist)
         from_channel_nr = self.visible_storm_channel_names.index(self.analysis_euclidean_between_channel_from)
@@ -1447,7 +1464,8 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
             channel=int(self.analysis_euclidean_between_channel_from_confocal)
             channelstr=str(channel)
             img=self.StormDisplay.ConfChannelToShow[channel]
-
+            print "img"
+            print img
 
             im=scipy.ndimage.zoom(img,(0.1,0.1),order=0)/ 255.0
             #fig2 = plt.figure(facecolor=(0, 0, 0), edgecolor=(0, 0, 0))
@@ -1467,10 +1485,12 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 print pix_size
                 print offset
                 print ConfocalSizeMultiplier
+
                 base_coords = numpy.empty((len(points[base_channel_nr]), 3), dtype=numpy.float)
                 base_coords[:, 0] = (numpy.asarray(points[base_channel_nr])[:, 0])/pix_size-offset[0]
                 base_coords[:, 1] = (numpy.asarray(points[base_channel_nr])[:, 1])/pix_size-offset[1]
                 base_coords[:, 2] = numpy.asarray(points[base_channel_nr])[:, 3]/pix_size
+                """
                 print "points"
                 print numpy.asarray(points[base_channel_nr])[:, 0]
                 print numpy.asarray(points[base_channel_nr])[:, 1]
@@ -1480,6 +1500,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 print "offset"
                 print offset
                 print ConfocalSizeMultiplier
+                """
 
                 image_max = ndimage.maximum_filter(im, size=3, mode='constant')
                 maxima = (im == image_max)
@@ -1513,6 +1534,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 boundaries[1]=numpy.amax(base_coords[:, 0])
                 boundaries[2]=numpy.amin(base_coords[:, 1])
                 boundaries[3]=numpy.amax(base_coords[:, 1])
+                """
                 print "coordinates"
                 print coordinates
                 print len(coordinates)
@@ -1521,6 +1543,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
 
                 print "boundaries"
                 print boundaries
+                """
                 # deleting local maxima which have a bigger distance from the bouton than the 2*threshold
 
                 distant_inds = numpy.where(numpy.asarray(coordinates[:,0]) < (boundaries[0]-2*distance_threshold))
@@ -1534,9 +1557,10 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
 
                 distant_inds = numpy.where(numpy.asarray(coordinates[:,1]) > (boundaries[3]+2*distance_threshold))
                 coordinates = numpy.delete(coordinates, distant_inds, 0)
-
+                """
                 print "coordinates2"
                 print coordinates
+                """
                 near_coordinates=[]
 
                 for nlg_coord in coordinates:
@@ -2547,6 +2571,8 @@ class BayesianClusteringAnalysis(Analysis):
                                 350, 370, 390, 410, 430, 450, 470, 490, 510, 530, 550, 570, 590]
                 histvalues = [8, 57, 104, 130, 155, 168, 197, 205, 216, 175, 123, 91, 74, 32, 24, 22, 12, 11, \
                                   6, 5, 3, 5, 1, 3, 0, 4, 0, 1, 1, 1]
+                #histvalues = [0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                 #                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             xlim = []
             ylim = []
 
@@ -2567,14 +2593,15 @@ class BayesianClusteringAnalysis(Analysis):
                 else:
                     return (math.log(f(sd))-math.log(cst))
             hv=[]
-
-            svector=self.Kclust(pts=coords, xlim=xlim, ylim=ylim, rseq=numpy.arange(10, 591, 20), thseq=thseq, sds=sdvalues, psd=psd, minsd=minsd, \
+            """
+            svector=self.Kclust(pts=coords, xlim=xlim, ylim=ylim, rseq=rseq, thseq=thseq, sds=sdvalues, psd=psd, minsd=minsd, \
                             maxsd=maxsd, useplabel=useplabel, alpha=alpha, pb=pbackground, hv=hv)
 
 
             histvalues = hv
             f = scipy.interpolate.interp1d(histbins, histvalues)
             cst = scipy.integrate.quad(f, histbins[0], histbins[len(histbins)-1])[0]
+            """
 
             svector = self.Kclust(pts=coords, xlim=xlim, ylim=ylim, rseq=rseq, thseq=thseq, sds=sdvalues, psd=psd, minsd=minsd, maxsd=maxsd, \
                                     useplabel=useplabel, alpha=alpha, pb=pbackground, hv=hv)
@@ -2586,7 +2613,7 @@ class BayesianClusteringAnalysis(Analysis):
                 if svector[i][2] > maxv:
                     maxv = svector[i][2]
                     ind = i
-            
+
             ok = True
             try:
                 a = svector[ind][3].membership
@@ -2600,12 +2627,16 @@ class BayesianClusteringAnalysis(Analysis):
                 A=svector[ind][4]
                 B=svector[ind][5]
                 Z=svector[ind][7]
+                index_cl=svector[ind][8]
+
 
                 counter=[]
                 memberships=[]
 
                 rs=[]
+                rss=[]
                 ths=[]
+                thss=[]
                 ss=[]
                 memberships.append(svector[ind][3].membership)
                 As = []
@@ -2613,11 +2644,15 @@ class BayesianClusteringAnalysis(Analysis):
                 all = []
                 all.append([svector[ind][2], svector[ind][3], svector[ind][4], svector[ind][5]])
                 rs.append(svector[ind][0])
+                rss.append(svector[ind][0])
                 ths.append(svector[ind][1])
+                thss.append(svector[ind][1])
                 ss.append(svector[ind][2])
                 counter.append(1)
                 for i in range(len(svector)):
                     if svector[ind][2] == svector[i][2]:
+                        rss.append(svector[i][0])
+                        thss.append(svector[i][1])
                         exist = False
                         for j in range(len(memberships)):
                             if svector[i][3] != 0:
@@ -2638,6 +2673,9 @@ class BayesianClusteringAnalysis(Analysis):
                 for i in range(len(counter)):
                     if (counter[i]==max(counter)):
                         maxind.append(i)
+
+                print rss
+                print thss
                 """
                 maxind = maxind[0]
                 for i in range(len(svector)):
@@ -2648,6 +2686,8 @@ class BayesianClusteringAnalysis(Analysis):
                 """
                 A0 = svector[ind][4]
                 B0 = svector[ind][5]
+
+                index_cl0=svector[ind][8]
                 Z = svector[ind][7]
                 list = svector[ind][3]
                 ivector = []
@@ -2674,12 +2714,14 @@ class BayesianClusteringAnalysis(Analysis):
                     clustnums.remove(ivector2[i])
                 A = numpy.delete(A0, avector)
                 B = numpy.delete(B0, avector)
+                index_cl=numpy.delete(index_cl0, avector)
 
                 if(len(vec)==0):
                     ok=False;
                     print ("All points belong to the background")
 
             if ok:
+
                 for i in clustnums:
                     el = vec.count(i)
                     indexes = svector[ind][3][i]

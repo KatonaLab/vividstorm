@@ -43,10 +43,10 @@ QScrollArea{
         <x>0</x>
         <y>0</y>
         <width>974</width>
-        <height>1262</height>
+        <height>1298</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QGroupBox" name="groupBox_3">
          <property name="enabled">
@@ -71,7 +71,7 @@ QScrollArea{
          <property name="checkable">
           <bool>false</bool>
          </property>
-         <layout class="QGridLayout" name="gridLayout_12">
+         <layout class="QGridLayout" name="gridLayout_11">
           <item row="0" column="0">
            <widget class="QRadioButton" name="radioButton_analysis_single">
             <property name="layoutDirection">
@@ -108,7 +108,7 @@ QScrollArea{
             </property>
            </widget>
           </item>
-          <item row="0" column="4" rowspan="2">
+          <item row="0" column="8" rowspan="2">
            <spacer name="horizontalSpacer_4">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -135,13 +135,33 @@ QScrollArea{
            </spacer>
           </item>
           <item row="1" column="2">
-           <widget class="QPushButton" name="pushButton_analysis_batch_choose_folder">
+           <widget class="QPushButton" name="pushButton_analysis_batch_choose_roicoords">
             <property name="text">
-             <string>Choose folder</string>
+             <string>Choose STORM files</string>
             </property>
            </widget>
           </item>
           <item row="1" column="3">
+           <widget class="QLineEdit" name="lineEdit_analysis_roicoords_name">
+            <property name="frame">
+             <bool>false</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+            <property name="placeholderText">
+             <string>Folder name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QPushButton" name="pushButton_analysis_batch_choose_folder">
+            <property name="text">
+             <string>Choose Results</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="5">
            <widget class="QLineEdit" name="lineEdit_analysis_folder_name">
             <property name="enabled">
              <bool>false</bool>
@@ -162,6 +182,59 @@ QScrollArea{
              <string>Folder name</string>
             </property>
            </widget>
+          </item>
+          <item row="1" column="6">
+           <widget class="QPushButton" name="pushButton_analysis_batch_choose_confocal">
+            <property name="text">
+             <string>Choose confocal</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="7">
+           <widget class="QLineEdit" name="lineEdit_analysis_confocal_name">
+            <property name="frame">
+             <bool>false</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+            <property name="placeholderText">
+             <string>Folder name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="4">
+           <widget class="QPushButton" name="pushButton_analysis_batch_choose_roiattr">
+            <property name="text">
+             <string>Choose RoiAttr</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="5">
+           <widget class="QLineEdit" name="lineEdit_analysis_roiattr_name">
+            <property name="frame">
+             <bool>false</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+            <property name="placeholderText">
+             <string>Folder name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="6" colspan="3">
+           <spacer name="horizontalSpacer_6">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>242</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>

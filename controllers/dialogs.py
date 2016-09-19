@@ -328,7 +328,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
         self.analyses.append(SurfaceDensityDistributionAnalysis('analysis_surface_density_distribution'))
         self.analyses.append(ExportCoordinatesTxtAnalysis('analysis_export_coords'))
         self.analyses.append(ExportCoordinatesPdbAnalysis('analysis_export_pdb'))
-        self.analyses.append(QualityControlAnalysis('analysis_quality_control')) # appending new analysis
+        self.analyses.append(QualityControlAnalysis('analysis_quality_control'))
         self.analyses.append(BayesianClusteringAnalysis('analysis_bayesian'))
         # self.analyses.append(NewAnalysis('analysis_new')) # appending new analysis
 
@@ -402,12 +402,46 @@ class AnalysisDialog(Ui_Dialog_analysis):
                                                                        "/home")
             self.lineEdit_analysis_folder_name.setText(batch_folder_name)
 
+    def choose_batch_analyses_roiattr(self):
+        if self.radioButton_analysis_batch.isChecked():
+            folder_dialog = QtGui.QFileDialog()
+            folder_dialog.setFileMode(QtGui.QFileDialog.Directory)
+            folder_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
+            title = "Choose folder"
+            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, \
+                                                                       "/home")
+            self.lineEdit_analysis_roiattr_name.setText(batch_folder_name)
+
+    def choose_batch_analyses_roicoords(self):
+        if self.radioButton_analysis_batch.isChecked():
+            folder_dialog = QtGui.QFileDialog()
+            folder_dialog.setFileMode(QtGui.QFileDialog.Directory)
+            folder_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
+            title = "Choose folder"
+            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, \
+                                                                       "/home")
+            self.lineEdit_analysis_roicoords_name.setText(batch_folder_name)
+
+    def choose_batch_analyses_confocal(self):
+        if self.radioButton_analysis_batch.isChecked():
+            folder_dialog = QtGui.QFileDialog()
+            folder_dialog.setFileMode(QtGui.QFileDialog.Directory)
+            folder_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
+            title = "Choose folder"
+            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, \
+                                                                       "/home")
+            self.lineEdit_analysis_confocal_name.setText(batch_folder_name)
+
+
     def _add_input_handlers(self):
         for group_box in self.group_boxes:
             group_box.toggled.connect(partial(self._on_setting_changed, group_box))
         self.pushButton_analysis_run.clicked.connect(lambda: self.run_analyses())
         self.pushButton_analysis_bayesian_choose_file.clicked.connect(lambda: self.choose_histogram_file())
         self.pushButton_analysis_batch_choose_folder.clicked.connect(lambda: self.choose_batch_analyses_folder())
+        self.pushButton_analysis_batch_choose_roiattr.clicked.connect(lambda: self.choose_batch_analyses_roiattr())
+        self.pushButton_analysis_batch_choose_roicoords.clicked.connect(lambda: self.choose_batch_analyses_roicoords())
+        self.pushButton_analysis_batch_choose_confocal.clicked.connect(lambda: self.choose_batch_analyses_confocal())
 
     def setup_conf_channel(self, channel_list, channels_visible):
         comboBox = self.comboBox_analysis_euclidean_between_channel_from_confocal
@@ -432,146 +466,276 @@ class AnalysisDialog(Ui_Dialog_analysis):
     def run_batch_analyses(self):
         print "Batch analyses"
 
+        roicoords_folder = self.lineEdit_analysis_roicoords_name.text()
+        result_folder = self.lineEdit_analysis_folder_name.text()
+
+        roiattr_folder = self.lineEdit_analysis_roiattr_name.text()
+
+        confocal_folder = self.lineEdit_analysis_confocal_name.text()
+
+        if roiattr_folder == "":
+            roiattr_folder = roicoords_folder
+        if result_folder == "":
+            result_folder = roicoords_folder
+        if confocal_folder == "":
+            confocal_folder = roicoords_folder
+
+        if not os.path.exists(roicoords_folder+'/results'):
+            os.makedirs(str(roicoords_folder)+'/results')
 
         self.main_window.status_bar.showMessage('Running analyses, please wait...')
-        allfiles_storm = os.listdir(self.lineEdit_analysis_folder_name.text()+"/storm")
-        if os.path.exists(self.lineEdit_analysis_folder_name.text()+"/roi_attr"):
-            allfiles_roiattr = os.listdir(self.lineEdit_analysis_folder_name.text()+"/roi_attr")
-            roiattr_index = 0
-        if not os.path.exists(self.lineEdit_analysis_folder_name.text()+'/results'):
-            os.makedirs(str(self.lineEdit_analysis_folder_name.text())+'/results')
 
-        for filename in allfiles_storm:
-            filepath_w = self.lineEdit_analysis_folder_name.text()+'/results/'+filename
-            print filename
 
-            storm_image = images.StormImage(filename)
-            storm_image.coords_cols = (self.main_window.storm_settings.storm_config_fileheader_x,\
-                                       self.main_window.storm_settings.storm_config_fileheader_y,\
-                                       self.main_window.storm_settings.storm_config_fileheader_z)
-            storm_image.other_cols = (
-                self.main_window.storm_settings.storm_config_fileheader_localization_precision,
-                self.main_window.storm_settings.storm_config_fileheader_channel_name,
-                self.main_window.storm_settings.storm_config_fileheader_photon,
-                self.main_window.storm_settings.storm_config_fileheader_frame
-            )
-            storm_image.file_path = self.lineEdit_analysis_folder_name.text()+"/storm/"+filename
-            storm_image.parse()
-            #self.main_window.viewer.current_storm_image = storm_image
 
-            roi_border = []
-            if os.path.exists(self.lineEdit_analysis_folder_name.text()+"/roi_attr"):
-                with open(self.lineEdit_analysis_folder_name.text()+"/roi_attr/"+allfiles_roiattr[roiattr_index]) as attr_file:
-                    roiattr_index += 1
-                    line = attr_file.readline()
-                    line = attr_file.readline()
 
-                    y_offset, x_offset = [float(x) for x in line.split()]
-                    for i in range(0, 2):
+
+        result_files = os.listdir(result_folder)
+        result_files2=[]
+        for file in result_files:
+            if file.endswith('_Results.txt'):
+                result_files2.append(file)
+
+        roicoords_files = os.listdir(roicoords_folder)
+        roicoords_files2=[]
+        for file in roicoords_files:
+            if file.endswith('_RoiCoords.txt'):
+                roicoords_files2.append(file)
+        roiattr_files = os.listdir(roiattr_folder)
+        roiattr_files2=[]
+        for file in roiattr_files:
+            if file.endswith('_RoiAttr.txt'):
+                roiattr_files2.append(file)
+        confocal_files = os.listdir(confocal_folder)
+        confocal_files2=[]
+        for file in confocal_files:
+            if file.endswith('.tif'):
+                confocal_files2.append(file)
+
+        conf_b=False
+        roi_b=False
+        res_b=False
+        if len(confocal_files2) > 0:
+             conf_b = True
+        if len(roiattr_files2) > 0:
+            roi_b= True
+        if len(result_files2) > 0:
+            res_b=True
+
+        if self.main_window.viewer.current_confocal_image is not None and conf_b:
+
+            tmp = self.main_window.viewer.current_confocal_image
+            tmp2 = self.main_window.viewer.display.ConfocalData
+            tmp3 = self.main_window.viewer.display.ConfocalMetaData
+            tmp4 = self.main_window.viewer.display.ConfocalOffset()
+            tmp5 = self.main_window.viewer.display.ConfChannelToShow
+            a = str(tmp4[0])
+            b = str(tmp4[1])
+
+        if res_b:
+            for file in result_files2:
+                tag=file[:file.find('_Results.txt')]
+                filepath_w = roicoords_folder+'/results/'+file
+                storm_image = images.StormImage(file)
+                storm_image.coords_cols = (self.main_window.storm_settings.storm_config_fileheader_x,\
+                                           self.main_window.storm_settings.storm_config_fileheader_y,\
+                                           self.main_window.storm_settings.storm_config_fileheader_z)
+                storm_image.other_cols = (
+                    self.main_window.storm_settings.storm_config_fileheader_localization_precision,
+                    self.main_window.storm_settings.storm_config_fileheader_channel_name,
+                    self.main_window.storm_settings.storm_config_fileheader_photon,
+                    self.main_window.storm_settings.storm_config_fileheader_frame
+                )
+                storm_image.file_path = roicoords_folder+'/'+tag+'_RoiCoords.txt'
+                storm_image.parse()
+                roi_border= []
+                with open(roiattr_folder+'/'+tag+'_RoiAttr.txt') as attr_file:
+
                         line = attr_file.readline()
-                    roi_tag = line[:-1]
-                    line = attr_file.readline()
+                        line = attr_file.readline()
 
-                    if roi_tag == "FreehandROI":
-                        index = str(storm_image.file_path).find("freehandROI")
-                        index2 = str(storm_image.file_path).find("RoiCoords")-1
-                        roi_tag = str(storm_image.file_path)[index:index2]
-                    elif roi_tag == "CircleROI":
-                        index = str(storm_image.file_path).find("circleROI")
-                        index2 = str(storm_image.file_path).find("RoiCoords")-1
-                        roi_tag = str(storm_image.file_path)[index:index2]
-                    elif roi_tag == "EllipseROI":
-                        index = str(storm_image.file_path).find("ellipseROI")
-                        index2 = str(storm_image.file_path).find("RoiCoords")-1
-                        roi_tag = str(storm_image.file_path)[index:index2]
-
-                    if line == "ROI confocal pixel number\n":
-                        for i in range(0, 4):
+                        y_offset, x_offset = [float(x) for x in line.split()]
+                        for i in range(0, 2):
                             line = attr_file.readline()
+                        roi_tag = line[:-1]
+                        line = attr_file.readline()
 
-                        conf_name = attr_file.readline()
-                        print conf_name
+                        if roi_tag == "FreehandROI":
+                            index = str(storm_image.file_path).find("freehandROI")
+                            index2 = str(storm_image.file_path).find("RoiCoords")-1
+                            roi_tag = str(storm_image.file_path)[index:index2]
+                        elif roi_tag == "CircleROI":
+                            index = str(storm_image.file_path).find("circleROI")
+                            index2 = str(storm_image.file_path).find("RoiCoords")-1
+                            roi_tag = str(storm_image.file_path)[index:index2]
+                        elif roi_tag == "EllipseROI":
+                            index = str(storm_image.file_path).find("ellipseROI")
+                            index2 = str(storm_image.file_path).find("RoiCoords")-1
+                            roi_tag = str(storm_image.file_path)[index:index2]
 
-                        line = attr_file.readline().split()
-                        while line:
+                        if line == "ROI confocal pixel number\n":
+                            for i in range(0, 4):
+                                line = attr_file.readline()
+
+                            conf_name = attr_file.readline()
+                            print conf_name
+
                             line = attr_file.readline().split()
 
+                            while line:
+                                line = attr_file.readline().split()
+                                if line:
+                                    roi_border.append(line)
+
+
+
+
                 attr_file.close()
+                if conf_name is not None and self.main_window.viewer.current_confocal_image is not None and conf_b:
 
-                confocal_image = images.ConfocalImage(QString(str(conf_name)))
-                confocal_image.file_path = str(self.lineEdit_analysis_folder_name.text() + "/confocal/" + conf_name[:-1])
-                confocal_image_name = str(self.lineEdit_analysis_folder_name.text() + "/confocal/" + conf_name[:-1])
+                    confocal_image = images.ConfocalImage(QString(str(conf_name)))
+                    confocal_image.file_path = str(confocal_folder + '/' + conf_name[:-1])
+                    confocal_image_name = str(confocal_folder + '/' + conf_name[:-1])
 
-                confocal_image.parse(self.main_window.confocal_settings.confocal_config_calibration_px, self.main_window)
-                #self.main_window.viewer.display.Viewbox = [y_offset, x_offset]
-                self.main_window.viewer.current_confocal_image = confocal_image
-                self.main_window.viewer.display.ConfocalData = confocal_image.ConfocalData
-                self.main_window.viewer.display.ConfocalMetaData = confocal_image.ConfocalMetaData
-                Scale=1000*self.main_window.viewer.display.ConfocalSizeMultiplier
+                    confocal_image.parse(self.main_window.confocal_settings.confocal_config_calibration_px, self.main_window)
+                    #self.main_window.viewer.display.Viewbox = [y_offset, x_offset]
+                    self.main_window.viewer.current_confocal_image = confocal_image
+                    self.main_window.viewer.display.ConfocalData = confocal_image.ConfocalData
+                    self.main_window.viewer.display.ConfocalMetaData = confocal_image.ConfocalMetaData
+                    Scale=1000*self.main_window.viewer.display.ConfocalSizeMultiplier
 
-                self.main_window.doubleSpinBox_confocal_display_offset_x.setValue(
+                    self.main_window.doubleSpinBox_confocal_display_offset_x.setValue(
+                    int(x_offset * Scale * self.main_window.viewer.display.ConfocalMetaData['SizeX']))
+                    self.main_window.doubleSpinBox_confocal_display_offset_y.setValue(
+                    int(y_offset * Scale * self.main_window.viewer.display.ConfocalMetaData['SizeX']))
+                    px = self.main_window.viewer.display.ConfocalMetaData['SizeX']
+
+                    self.main_window.viewer.display.Viewbox.ConfocalOffset = [
+                    self.main_window.confocal_settings.confocal_display_offset_y / (100 * px),
+                    self.main_window.confocal_settings.confocal_display_offset_x / (100 * px)
+
+                    ]
+
+                else:
+                    confocal_image_name = ""
+
+
+
+
+
+
+                values_simple = []
+                StormData_to_analyse = storm_image.StormData
+                dimensions = '3d' if self.main_window.storm_settings.storm_config_fileheader_z else '2d'
+                channels_num = len([ch for ch in self.main_window.viewer.display.StormChannelVisible if ch])
+                StormData_to_analyse = self.main_window.storm_settings.filter_storm_data(StormData_to_analyse)
+
+                for analysis in self.analyses:
+                    if analysis.enabled:
+                        if not confocal_image_name == "":
+                            values = analysis.run_batch(
+                                StormData_to_analyse,
+                                channels_num,
+                                dimensions,
+                                filepath_w,
+                                roi_tag,
+                                confocal_image_name,
+                                [y_offset, x_offset],
+                                confocal_image,
+                                confocal_image.ConfocalMetaData,
+
+                            )
+                        else:
+                            values = analysis.run_batch(
+                                StormData_to_analyse,
+                                channels_num,
+                                dimensions,
+                                filepath_w,
+                                roi_tag,
+                                "",
+                                [y_offset, x_offset],
+                                "",
+                                "",
+
+                            )
+                        values_simple.append(values)
+
+                self.write_results_common_to_file_batch(values_simple, file[:-4])
+        else:
+            print 'original STORM file analysis'
+            for file in roicoords_files2:
+                tag=file[:file.find('.txt')]
+                filepath_w = roicoords_folder+'/results/'+file
+
+                storm_image = images.StormImage(file)
+                storm_image.coords_cols = (self.main_window.storm_settings.storm_config_fileheader_x,\
+                                               self.main_window.storm_settings.storm_config_fileheader_y,\
+                                               self.main_window.storm_settings.storm_config_fileheader_z)
+                storm_image.other_cols = (
+                        self.main_window.storm_settings.storm_config_fileheader_localization_precision,
+                        self.main_window.storm_settings.storm_config_fileheader_channel_name,
+                        self.main_window.storm_settings.storm_config_fileheader_photon,
+                        self.main_window.storm_settings.storm_config_fileheader_frame
+                )
+                storm_image.file_path = roicoords_folder+'/'+tag+'.txt'
+                storm_image.parse()
+                roi_tag= 'FULL STORM DATA'
+                values_simple = []
+                StormData_to_analyse = storm_image.StormData
+                dimensions = '3d' if self.main_window.storm_settings.storm_config_fileheader_z else '2d'
+                channels_num = len([ch for ch in self.main_window.viewer.display.StormChannelVisible if ch])
+                StormData_to_analyse = self.main_window.storm_settings.filter_storm_data(StormData_to_analyse)
+
+                for analysis in self.analyses:
+                    if analysis.enabled:
+
+
+                        values = analysis.run_batch(
+                                StormData_to_analyse,
+                                channels_num,
+                                dimensions,
+                                filepath_w,
+                                roi_tag,
+                                "",
+                                "",
+                                "",
+                                "",
+
+                        )
+                        values_simple.append(values)
+
+                self.write_results_common_to_file_batch(values_simple, file[:-4])
+
+        if self.main_window.viewer.current_confocal_image is not None and conf_b:
+            tmp.parse(self.main_window.confocal_settings.confocal_config_calibration_px, self.main_window)
+            self.main_window.viewer.current_confocal_image = tmp
+            self.main_window.viewer.display.ConfocalData = tmp2
+            self.main_window.viewer.display.ConfocalMetaData = tmp3
+            Scale=1000*self.main_window.viewer.display.ConfocalSizeMultiplier
+
+            self.main_window.doubleSpinBox_confocal_display_offset_x.setValue(
                 int(x_offset * Scale * self.main_window.viewer.display.ConfocalMetaData['SizeX']))
-                self.main_window.doubleSpinBox_confocal_display_offset_y.setValue(
+            self.main_window.doubleSpinBox_confocal_display_offset_y.setValue(
                 int(y_offset * Scale * self.main_window.viewer.display.ConfocalMetaData['SizeX']))
-                px = self.main_window.viewer.display.ConfocalMetaData['SizeX']
-                self.main_window.viewer.display.Viewbox.ConfocalOffset = [
-                self.main_window.confocal_settings.confocal_display_offset_y / (100 * px),
-                self.main_window.confocal_settings.confocal_display_offset_x / (100 * px)
+            px = self.main_window.viewer.display.ConfocalMetaData['SizeX']
 
-                ]
+            self.main_window.viewer.display.Viewbox.ConfocalOffset = [
+                    float(a),
+                    float(b)
 
-            else:
-                roi_tag = "FULL_STORM_DATA"
-                confocal_image_name = ""
-                confocal_image=""
-
-                y_offset = 0
-                x_offset = 0
-
-            values_simple = []
-            StormData_to_analyse = storm_image.StormData
-            dimensions = '3d' if self.main_window.storm_settings.storm_config_fileheader_z else '2d'
-            channels_num = len([ch for ch in self.main_window.viewer.display.StormChannelVisible if ch])
-            StormData_to_analyse = self.main_window.storm_settings.filter_storm_data(StormData_to_analyse)
-
-
-            for analysis in self.analyses:
-                if analysis.enabled:
+                    ]
+            self.main_window.viewer.display.ConfChannelToShow = tmp5
 
 
 
-                    if not confocal_image_name == "":
-                        values = analysis.run_batch(
-                            StormData_to_analyse,
-                            channels_num,
-                            dimensions,
-                            filepath_w,
-                            roi_tag,
-                            confocal_image_name,
-                            [y_offset, x_offset],
-                            confocal_image,
-                            confocal_image.ConfocalMetaData,
 
-                        )
-                    else:
-                        values = analysis.run_batch(
-                            StormData_to_analyse,
-                            channels_num,
-                            dimensions,
-                            filepath_w,
-                            roi_tag,
-                            "",
-                            [y_offset, x_offset],
-                            "",
-                            "",
+        values_simple = []
 
-                        )
+        StormData_to_analyse = storm_image.StormData
+        StormData_to_analyse = self.main_window.storm_settings.filter_storm_data(StormData_to_analyse)
 
 
 
-                    values_simple.append(values)
 
-            self.write_results_common_to_file_batch(values_simple, filename[:-4])
 
         print "Batch analysis ready"
 
@@ -615,6 +779,9 @@ class AnalysisDialog(Ui_Dialog_analysis):
                     ConfocalFileName=str.split(self.main_window.viewer.current_confocal_image.file_path,os.sep)[-1]
             self.main_window.status_bar.showMessage('Ready '+'StormFile:'+StormFileName+' ConfocalFile:'+ConfocalFileName)
             self.scrollAreaWidgetContents.window().close()
+        elif self.lineEdit_analysis_roicoords_name.text() == "":
+
+            self.main_window.show_error(message='No STORM file folder is chosen!')
         else:
             self.run_batch_analyses()
             self.scrollAreaWidgetContents.window().close()
@@ -649,9 +816,9 @@ class AnalysisDialog(Ui_Dialog_analysis):
         f.close()
 
     def write_results_common_to_file_batch(self, computed_values_simple, filename):
-        if not os.path.exists(self.lineEdit_analysis_folder_name.text()+'/results'):
-            os.makedirs(str(self.lineEdit_analysis_folder_name.text())+'/results')
-        filepath = self.lineEdit_analysis_folder_name.text()+'/results/'+filename+'_' + 'Results' + '.txt'
+        if not os.path.exists(self.lineEdit_analysis_roicoords_name.text()+'/results'):
+            os.makedirs(str(self.lineEdit_analysis_roicoords_name.text())+'/results')
+        filepath = self.lineEdit_analysis_roicoords_name.text()+'/results/'+filename+ '.txt'
 
         firstline = ''
         secondline = ''

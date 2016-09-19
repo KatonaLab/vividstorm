@@ -184,6 +184,20 @@ def scorewprec(self, labels, pts, sd, xlim, ylim, psd, minsd, maxsd, useplabel=T
 
 def Kclust(self,pts, xlim, ylim, rseq, thseq,sds=0, psd=0, minsd=0, maxsd=0, useplabel=True, alpha=0, pb=0.5, \
                score=True, rlabel=False, report=True,hv=[]):
+        """
+        print pts
+        print pts.shape
+        print xlim
+        print ylim
+        print rseq
+        print thseq
+        print sds
+        print minsd
+        print maxsd
+        print alpha
+        print pb
+        exit(0)
+        """
         svector=[]
         results = []
         pts0=pts
@@ -216,6 +230,7 @@ def Kclust(self,pts, xlim, ylim, rseq, thseq,sds=0, psd=0, minsd=0, maxsd=0, use
                 A = pts[:, 0][C]
                 B = pts[:, 1][C]
                 Z = pts0[:, 2][C]
+
 
                 C2 = numpy.array(C)
 
@@ -267,11 +282,11 @@ def Kclust(self,pts, xlim, ylim, rseq, thseq,sds=0, psd=0, minsd=0, maxsd=0, use
 
                         rvector2.append(len(lab))
 
-                        svector.append([r, th, s, lab, A, B, cl_index,Z])
+                        svector.append([r, th, s, lab, A, B, cl_index,Z,C])
 
 
                     else:
-                        svector.append([r,th,s,0,A,B])
+                        svector.append([r,th,s,0,A,B,C])
                         rvector2.append(0)
 
 
