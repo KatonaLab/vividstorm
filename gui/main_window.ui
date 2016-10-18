@@ -2613,6 +2613,7 @@ QMenu::item::selected {
    </attribute>
    <addaction name="actionDragging_mode"/>
    <addaction name="actionImage_Registration"/>
+   <addaction name="actionImage_AutomaticRegistration"/>
    <addaction name="actionShow_1_m_scale"/>
    <addaction name="actionLUT_changer"/>
    <addaction name="actionAnalysis"/>
@@ -2944,6 +2945,21 @@ QMenu::item::selected {
    </property>
    <property name="shortcut">
     <string>R</string>
+   </property>
+  </action>
+  <action name="actionImage_AutomaticRegistration">
+   <property name="icon">
+    <iconset resource="../resources/main_resources.qrc">
+     <normaloff>:/icon/icons/list20.png</normaloff>:/icon/icons/list20.png</iconset>
+   </property>
+   <property name="text">
+    <string>Automatic Registration</string>
+   </property>
+   <property name="toolTip">
+    <string>Automatic image registration</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
    </property>
   </action>
  </widget>

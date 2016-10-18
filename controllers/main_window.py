@@ -18,6 +18,7 @@ from rois import FreehandRoi
 from settings import *
 import os
 import analyses as anal
+import autoregistration
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -135,6 +136,9 @@ class MainWindow(Ui_MainWindow):
         self.actionAbout_VividSTORM.triggered.connect(lambda: self._open_dialog(self.dialog_about))
         self.actionVividSTORM_help.triggered.connect(lambda: self._open_dialog(self.dialog_help))
         self.actionImage_Registration.triggered.connect(lambda: self._open_dialog(self.dialog_imageregistration))
+
+        self.actionImage_AutomaticRegistration.triggered.connect(lambda: self._automatic_registration())
+
 
     def _add_key_shortcuts(self):
         QtCore.QObject.connect(
@@ -470,5 +474,18 @@ class MainWindow(Ui_MainWindow):
                                                          "PNG image file (*.png)"))
         self.viewer.display.export_as_image(filename)
 
-
+    def _automatic_registration(self):
+        StormOk=0
+        ConfocalOk=0
+        if sum(self.viewer.display.StormChannelVisible)==1:
+            if sum(self.viewer.display.ConfocalChannelVisible)==1:
+                autoregistration.RegisterChannels(self.viewer)
+            elif sum(self.viewer.display.ConfocalChannelVisible)>1:
+                self.show_error(message='More than one confocal channel is displayed')
+            else:
+                self.show_error(message='No Confocal channel is displayed')
+        elif sum(self.viewer.display.StormChannelVisible)>1:
+            self.show_error(message='More than strom one channel is displayed')
+        else:
+            self.show_error(message='No storm channel is displayed')
 
