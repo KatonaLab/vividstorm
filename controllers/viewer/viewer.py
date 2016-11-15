@@ -9,8 +9,10 @@ Author: turbo
 
 from StormDisplay import StormDisplay
 from .. import default_config
-from ..rois import EllipseRoi, CircleRoi, ActiveContourRoi
+from ..rois import EllipseRoi, CircleRoi, ActiveContourRoi, ActiveContourRoi3d
 import os
+import pyqtgraph as pg
+from pyqtgraph.Qt import QtGui
 
 class Viewer(object):
     def __init__(self, *args, **kwargs):
@@ -179,6 +181,46 @@ class Viewer(object):
             active_contour_roi = ActiveContourRoi('activeContourROI_' + num)
             active_contour_roi.roi = roi
             self.main_window.storm_settings.add_roi(active_contour_roi)
+        elif shape =='active_contour_3d':
+            roi = self.display.createActiveContourROI_3d(new_roi)
+            num = str(self.main_window.storm_settings.get_roi_counter())
+            active_contour_roi3d = ActiveContourRoi3d('activeContourROI3d_' + num)
+            active_contour_roi3d.roi = roi
+            self.main_window.storm_settings.add_roi(active_contour_roi3d)
+
+    def add_roi_3d(self, new_roi, xy_pointlist, storm_inside):
+
+        #roi = self.display.createActiveContourROI_3d(new_roi)
+        num = str(self.main_window.storm_settings.get_roi_counter())
+        active_contour_roi3d = ActiveContourRoi3d('activeContourROI3d_' + num)
+        active_contour_roi3d.storm = storm_inside
+        active_contour_roi3d.roi = new_roi
+        self.main_window.storm_settings.add_roi(active_contour_roi3d)
+
+        QtPoints = []
+        DrawnElements = []
+        FirstTime = True
+        for PP in xy_pointlist:
+            QtPoints.append(pg.Point(PP))
+            if FirstTime:
+                FirstTime = False
+                FirstPoint = PP
+            else:
+                r1 = pg.QtGui.QGraphicsLineItem(PrevPoint[0], PrevPoint[1], PP[0], PP[1])
+                r1.setPen(pg.mkPen('w'))
+                DrawnElements.append(r1)
+                self.display.Viewbox.addItem(r1)
+            PrevPoint = PP
+        #closing the roi
+        QtPoints.append(pg.Point(FirstPoint))
+        r1 = pg.QtGui.QGraphicsLineItem(PP[0], PP[1], FirstPoint[0], FirstPoint[1], )
+        r1.setPen(pg.mkPen('w'))
+        DrawnElements.append(r1)
+        self.display.Viewbox.addItem(r1)
+        #return [pg.QtGui.QGraphicsPolygonItem(QtGui.QPolygonF(QtPoints)), QtPoints, DrawnElements]
+
+
+
 
     def remove_roi(self, roi):
 	if type(roi).__name__ == 'EllipseRoi' or type(roi).__name__ == 'CircleRoi':

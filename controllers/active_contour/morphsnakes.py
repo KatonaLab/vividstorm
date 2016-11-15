@@ -374,10 +374,16 @@ def evolve_visual(msnake, levelset=None, num_iters=20, background=None):
     # Return the last levelset.
     return msnake.levelset
 
+def circle_levelset(shape, center, sqradius, scalerow=1.0):
+    """Build a binary function with a circle as the 0.5-levelset."""
+    grid = np.mgrid[list(map(slice, shape))].T - center
+    phi = sqradius - np.sqrt(np.sum((grid.T)**2, 0))
+    u = np.float_(phi > 0)
+    return u
 def evolve_visual3d(msnake, levelset=None, num_iters=20):
     """
     Visual evolution of a three-dimensional morphological snake.
-    
+
     Parameters
     ----------
     msnake : MorphGAC or MorphACWE instance
@@ -388,20 +394,159 @@ def evolve_visual3d(msnake, levelset=None, num_iters=20):
     num_iters : int, optional
         The number of iterations.
     """
-    from enthought.mayavi import mlab
-    
+
+    #from mayavi import mlab
+    import matplotlib.pyplot as ppl
+
     if levelset is not None:
         msnake.levelset = levelset
-    
+
+    #fig = mlab.gcf()
+    #mlab.clf()
+    #src = mlab.pipeline.scalar_field(msnake.data)
+    #mlab.pipeline.image_plane_widget(src, plane_orientation='x_axes', colormap='gray')
+    #cnt = mlab.contour3d(msnake.levelset, contours=[0.5])
+
+    #@mlab.animate(ui=True)
+    #def anim():
+    for i in range(num_iters):
+        msnake.step()
+            #cnt.mlab_source.scalars = msnake.levelset
+        #print("Iteration %s/%s..." % (i + 1, num_iters))
+        #yield
+
+    #anim()
+    #mlab.show()
+
+    # Return the last levelset.
+    return msnake.levelset
+
+def evolve_visual3d_2(msnake, levelset=None, num_iters=20):
+    """
+    Visual evolution of a three-dimensional morphological snake.
+
+    Parameters
+    ----------
+    msnake : MorphGAC or MorphACWE instance
+        The morphological snake solver.
+    levelset : array-like, optional
+        If given, the levelset of the solver is initialized to this. If not
+        given, the evolution will use the levelset already set in msnake.
+    num_iters : int, optional
+        The number of iterations.
+    """
+
+    from mayavi import mlab
+    import matplotlib.pyplot as ppl
+
+    if levelset is not None:
+        msnake.levelset = levelset
+
     fig = mlab.gcf()
     mlab.clf()
     src = mlab.pipeline.scalar_field(msnake.data)
     mlab.pipeline.image_plane_widget(src, plane_orientation='x_axes', colormap='gray')
     cnt = mlab.contour3d(msnake.levelset, contours=[0.5])
-    
-    for i in xrange(num_iters):
-        msnake.step()
-        cnt.mlab_source.scalars = msnake.levelset
-    
-    # Return the last levelset.
+
+    @mlab.animate(ui=True)
+    def anim():
+        for i in range(num_iters):
+            msnake.step()
+            cnt.mlab_source.scalars = msnake.levelset
+            print("Iteration %s/%s..." % (i + 1, num_iters))
+            yield
+
+    anim()
+    mlab.show()
+
+    #Return the last levelset.
     return msnake.levelset
+
+
+def CountNeighborNumber2( x, y,z, matrix):
+
+
+        nn = 0
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+
+                    if matrix[x , y + i,z+j] == 0:
+                        nn += 1
+        return nn
+def CountNeighborNumber3( z, y,x, matrix):
+
+
+        nn = 0
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                for k in range(-1,2):
+
+                    if matrix[z+k , y + i,x+j] == 0:
+                        nn += 1
+        return nn
+
+def GetEdgeCoords2( matrix):
+    start_plane=0
+    end_plane=0
+    actual_last_slice=0
+    for x in range(np.shape(matrix)[0]):
+        for y in range(np.shape(matrix)[1]):
+            for z in range(np.shape(matrix)[2]):
+                if matrix[x, y,z] == 1:
+                    if start_plane==0:
+                        start_plane=x
+                    actual_last_slice=x
+    end_plane=actual_last_slice
+
+
+    edgecoords = []
+    outmatrix = np.copy(matrix)
+
+    for x in range(np.shape(matrix)[0]):
+        for y in range(np.shape(matrix)[1]):
+            for z in range(np.shape(matrix)[2]):
+                if matrix[x, y,z] == 1:
+                    if x != start_plane and x!=end_plane:
+                        nn = CountNeighborNumber2(x, y,z, matrix)
+                    else:
+                        nn = 1
+                    if nn > 0:
+
+                        edgecoords.append([x, y,z])
+                    else:
+                        outmatrix[x, y,z] = 0
+
+    return [edgecoords, outmatrix]
+
+def GetEdgeCoords3( matrix):
+    start_plane=0
+    end_plane=0
+    actual_last_slice=0
+    for x in range(np.shape(matrix)[0]):
+        for y in range(np.shape(matrix)[1]):
+            for z in range(np.shape(matrix)[2]):
+                if matrix[x, y,z] == 1:
+                    if start_plane==0:
+                        start_plane=x
+                    actual_last_slice=x
+    end_plane=actual_last_slice
+
+
+    edgecoords = []
+    outmatrix = np.copy(matrix)
+
+    for x in range(np.shape(matrix)[0]):
+        for y in range(np.shape(matrix)[1]):
+            for z in range(np.shape(matrix)[2]):
+                if matrix[x, y,z] == 1:
+                    if x != start_plane and x!=end_plane:
+                        nn = CountNeighborNumber3(x, y,z, matrix)
+                    else:
+                        nn = 1
+                    if nn > 0:
+
+                        edgecoords.append([x, y,z])
+                    else:
+                        outmatrix[x, y,z] = 0
+
+    return [edgecoords, outmatrix]

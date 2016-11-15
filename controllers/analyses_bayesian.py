@@ -198,6 +198,7 @@ def Kclust(self,pts, xlim, ylim, rseq, thseq,sds=0, psd=0, minsd=0, maxsd=0, use
         print pb
         exit(0)
         """
+
         svector=[]
         results = []
         pts0=pts
@@ -223,6 +224,7 @@ def Kclust(self,pts, xlim, ylim, rseq, thseq,sds=0, psd=0, minsd=0, maxsd=0, use
             rvector2 = []
             clustered2 = False
             for th in thseq:
+                print r,th
                 clustered=False
                 C = numpy.where(L >= th)[0]
 
@@ -230,6 +232,8 @@ def Kclust(self,pts, xlim, ylim, rseq, thseq,sds=0, psd=0, minsd=0, maxsd=0, use
                 A = pts[:, 0][C]
                 B = pts[:, 1][C]
                 Z = pts0[:, 2][C]
+
+
 
 
                 C2 = numpy.array(C)

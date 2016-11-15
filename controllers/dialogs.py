@@ -40,7 +40,7 @@ import images
 import settings
 from PyQt4.QtGui import QListWidgetItem
 from PyQt4.QtCore import QString
-
+import matplotlib.pyplot as plt
 
 class AboutDialog(Ui_Dialog_about):
     def __init__(self, *args, **kwargs):
@@ -88,6 +88,7 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
         self.z_position = None
         self.confocal_offset = None
         self.calibration_px = None
+        self.StormData_to_analyse = None
 
     def setup(self):
         self._add_input_handlers()
@@ -101,12 +102,13 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
             self.comboBox_confocal_channel_changer.removeItem(0)
         self.resetting = False
 
-    def setup_data(self, viewer, roi, z_position, confocal_offset, calibration_px):
+    def setup_data(self, viewer, roi, z_position, confocal_offset, calibration_px,StormData_to_analyse):
         self.viewer = viewer
         self.roi = roi
         self.z_position = z_position
         self.confocal_offset = confocal_offset
         self.calibration_px = calibration_px
+        self.StormData_to_analyse = StormData_to_analyse
 
     def setup_channel(self, channel_list, channels_visible):
         comboBox = self.comboBox_confocal_channel_changer
@@ -151,9 +153,109 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
         nn = 0
         for i in range(-1, 2):
             for j in range(-1, 2):
-                if matrix[x + i, y + j] == 0:
-                    nn += 1
+                try:
+                    if matrix[x + i, y + j] == 0:
+                        nn += 1
+                except:
+                    nn +=1
         return nn
+
+    def CountNeighborNumber_3d(self, z, y, x, matrix):
+
+
+            nn = 0
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    for k in range(-1,2):
+
+                        if matrix[z+k , y + i,x+j] == 0:
+                            nn += 1
+            return nn
+
+    def GetEdgeCoords_3d(self, matrix):
+        start_plane=0
+        end_plane=0
+        actual_last_slice=0
+        for x in range(numpy.shape(matrix)[0]):
+            for y in range(numpy.shape(matrix)[1]):
+                for z in range(numpy.shape(matrix)[2]):
+                    if matrix[x, y,z] == 1:
+                        if start_plane==0:
+                            start_plane=x
+                        actual_last_slice=x
+        end_plane=actual_last_slice
+
+
+        edgecoords = []
+        outmatrix = numpy.copy(matrix)
+
+        for x in range(numpy.shape(matrix)[0]):
+            for y in range(numpy.shape(matrix)[1]):
+                for z in range(numpy.shape(matrix)[2]):
+                    if matrix[x, y,z] == 1:
+                        if x != start_plane and x!=end_plane:
+                            nn = self.CountNeighborNumber_3d(x, y,z, matrix)
+                        else:
+                            nn = 1
+                        if nn > 0:
+
+                            edgecoords.append([x, y,z])
+
+        return edgecoords
+
+    def matrix_order(self, edgecoords):
+        ACROI=[]
+        CurrentPoint = edgecoords[0]
+        ACROI.append(CurrentPoint)
+        PointAdded = True
+        while PointAdded:
+            PointAdded=False
+            NeighbouringPoints=0
+            MinDist=2
+            MinPoint=[]
+            for point in edgecoords:
+                if math.fabs(CurrentPoint[0]-point[0])<2 and math.fabs(CurrentPoint[1]-point[1])<2:
+                    Dist=math.sqrt((CurrentPoint[0]-point[0])*(CurrentPoint[0]-point[0])+(CurrentPoint[1]-point[1])
+                                       *(CurrentPoint[1]-point[1]))
+                    if Dist<MinDist and Dist!=0:
+                        MinDist=Dist
+                        MinPoint=point
+            if MinPoint!=[]:
+                PointAdded=True
+                edgecoords.remove(MinPoint)
+                ACROI.append(MinPoint)
+                CurrentPoint=MinPoint
+        zoom =1000.0 * self.viewer.display.ConfocalMetaData['SizeX']
+        for i in range(len(ACROI)):
+            ACROI[i] = [ACROI[i][1] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeY'] + self.confocal_offset[1] * 100.0 * self.viewer.display.ConfocalMetaData['SizeY'] + zoom / 2.0,
+                        ACROI[i][0] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeX'] + self.confocal_offset[0] * 100.0 * self.viewer.display.ConfocalMetaData['SizeX'] + zoom / 2.0]#zoom
+        return ACROI
+
+
+    def matrix_order_wo_conv(self,xy_roi_full):
+            xy_roi_edge = []
+            CurrentPoint = xy_roi_full[0]
+            xy_roi_edge.append(CurrentPoint)
+            PointAdded = True
+            while PointAdded:
+                PointAdded=False
+                NeighbouringPoints=0
+                MinDist=2
+                MinPoint=[]
+                for point in xy_roi_full:
+                    if math.fabs(CurrentPoint[0]-point[0])<2 and math.fabs(CurrentPoint[1]-point[1])<2:
+                        Dist=math.sqrt((CurrentPoint[0]-point[0])*(CurrentPoint[0]-point[0])+(CurrentPoint[1]-point[1])
+                                       *(CurrentPoint[1]-point[1]))
+                        if Dist<MinDist and Dist!=0:
+                            MinDist=Dist
+                            MinPoint=point
+                if MinPoint!=[]:
+                    PointAdded=True
+                    xy_roi_full.remove(MinPoint)
+                    xy_roi_edge.append(MinPoint)
+                    CurrentPoint=MinPoint
+            return xy_roi_edge
+
 
     def run(self):
         print "Active contour"
@@ -165,6 +267,7 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
         channel = int(str(self.comboBox_confocal_channel_changer.currentText()))
         dilation_nr=numpy.int(self.spinBox_dilation.value())
         is_spline_on=self.checkBox_spline_fit.isChecked()
+        dim_2 = self.radioButton_2D.isChecked()
 
         """
         zpos = self.z_position
@@ -181,17 +284,19 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
                 img =self.confocal_image.ConfocalData[zpos] / 255.0 #if 1-channel, zstack
         """
         img=self.main_window.viewer.display.ConfChannelToShow[channel]
+
+
         #downscale the image:
-        
+
         # in case tracking active contour is needed
         #plt.figure()
         #plt.imshow(img)
         #plt.show()
         #if self.main_window.viewer.display.Viewbox.AffineTransform != []:
         #    img=cv2.warpAffine(img,self.main_window.viewer.display.Viewbox.AffineTransform,(img.shape))
-        
+
         # Morphological ACWE. Initialization of the level-set.
-        
+
         img=scipy.ndimage.zoom(img,  1.0/self.viewer.display.ConfocalSizeMultiplier, order=0)
 
         #plt.figure()
@@ -199,111 +304,296 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
         #plt.show()
 
         macwe = morphsnakes.MorphACWE(img, smoothing=mu, lambda1=lambda1, lambda2=lambda2)
+
         zoom = 1000.0 * self.viewer.display.ConfocalMetaData['SizeX']
-        
-        
+
+
         conf_offset = [self.confocal_offset[0] * 100.0 * self.viewer.display.ConfocalMetaData['SizeX'],
                        self.confocal_offset[1] * 100.0 * self.viewer.display.ConfocalMetaData['SizeY']]
 
         position = [numpy.int((self.roi.roi.pos()[1] + self.roi.roi.size()[0] / 2.0 - conf_offset[0]) / zoom),
                     numpy.int((self.roi.roi.pos()[0] + self.roi.roi.size()[0] / 2.0 - conf_offset[1]) / zoom)]
+
         r = numpy.int(self.roi.roi.size()[0] / zoom / 2)
+        numpy.set_printoptions(threshold=numpy.nan)
+        if not dim_2:
 
-        macwe.levelset = self.ActiveContourCircleLevelset(img.shape, position, r)  #circle center coordinates, radius
+            channel_storm = self.main_window.viewer.display.StormChannelVisible.index(True)
+            subarray = []
+            numpy.set_printoptions(threshold=numpy.nan)
+            #print self.confocal_image.ConfocalData[0][0][0].dtype
+            if len(self.main_window.viewer.display.ConfChannelToShow) == 1:
+                subarray = self.confocal_image.ConfocalData
+            else:
+                for i in range(len(self.confocal_image.ConfocalData)):
+                    subarray.append(self.confocal_image.ConfocalData[len(self.confocal_image.ConfocalData)-i-1][channel])
 
-        # Visual evolution.
-        #plt.figure()
+            img = numpy.array(subarray)
+            self.formWidget.window().close()
 
-        acroi = morphsnakes.evolve_visual(macwe, num_iters=iteration,
+            macwe = morphsnakes.MorphACWE(img, smoothing=mu, lambda1=lambda1, lambda2=lambda2)
+            macwe.levelset = morphsnakes.circle_levelset(img.shape, (self.z_position,position[0],position[1]), r)
+            acroi=morphsnakes.evolve_visual3d(macwe, num_iters=iteration)
+            if dilation_nr > 0:
+                acroi = scipy.ndimage.morphology.binary_dilation(acroi, iterations=dilation_nr)
+
+            [edgecoords_z_pos, outroi] = self.GetEdgeCoords(acroi[self.z_position])
+            ACROI = self.matrix_order(edgecoords_z_pos)
+
+            edgecoords_3d = self.GetEdgeCoords_3d(acroi)
+
+            inside_pixels=[]
+            for i in range(len(acroi)):
+                for j in range(len(acroi[0])):
+                    for k in range(len(acroi[0][0])):
+                        if acroi[i][j][k]==1:
+                            inside_pixels.append([i, j, k])
+
+            for i in range(len(edgecoords_3d)):
+                inside_pixels.remove(edgecoords_3d[i])
+
+
+            for i in range(len(inside_pixels)):
+                inside_pixels[i] =(inside_pixels[i][2] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeX'] + conf_offset[1]+self.viewer.display.ConfocalMetaData['SizeX']/2,
+                                       inside_pixels[i][1] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeY'] + conf_offset[0]+self.viewer.display.ConfocalMetaData['SizeY']/2,
+                                          inside_pixels[i][0] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeZ']-1050)
+
+            from math import sqrt,pow
+            sx=self.viewer.display.ConfocalMetaData['SizeX']*1000/2
+            sy=self.viewer.display.ConfocalMetaData['SizeY']*1000/2
+            sz=self.viewer.display.ConfocalMetaData['SizeZ']*1000/2
+            atlo= sqrt(pow(sx,2)+pow(sy*2,2))
+            mind=sqrt(pow(atlo,2)+pow(sz*2,2))
+            mind=sqrt(pow(sx*2,2)+pow(sz*2,2))
+
+            from scipy.spatial import distance
+            inside_roi=[]
+
+            for i in range(len(self.StormData_to_analyse[channel_storm])):
+                #self.StormData_to_analyse[channel_storm][i][3] = self.StormData_to_analyse[channel_storm][i][3]
+                for j in range(len(inside_pixels)):
+
+                    if distance.euclidean(numpy.array([self.StormData_to_analyse[channel_storm][i][0],self.StormData_to_analyse[channel_storm][i][1],self.StormData_to_analyse[channel_storm][i][3]]),inside_pixels[j]) <= mind:
+                        inside_roi.append(numpy.array(self.StormData_to_analyse[channel_storm][i]))
+                        break
+            inside_roi_storm = numpy.array(inside_roi)
+
+            #storm->konfokális
+            xm=position[1]-r-5
+            ym=position[0]-r-5
+
+            for i in range(len(inside_roi)):
+                x1 = int((float(inside_roi[i][0]-conf_offset[1])/self.viewer.display.ConfocalMetaData['SizeX']/1000-xm)*5)
+                y1 = int((float(inside_roi[i][1]-conf_offset[0])/self.viewer.display.ConfocalMetaData['SizeY']/1000-ym)*5)
+                z1 = int((float(inside_roi[i][3]+150*self.z_position+self.viewer.display.ConfocalMetaData['SizeZ']*1000/2)/self.viewer.display.ConfocalMetaData['SizeZ']/1000)*10)
+                inside_roi[i]=numpy.array([x1,y1,z1])
+
+            subarray2=[]
+            for i in range(len(img)):
+                sub1=[]
+                for j in range(position[0]-r-5,position[0]+r+5,1):
+                    sub2=[]
+                    for k in range(position[1]-r-5,position[1]+r+5,1):
+                        sub2.append(img[i][j][k])
+                    sub1.append(sub2)
+                subarray2.append(sub1)
+            subarray2=numpy.array(subarray2)
+
+            max_pr_xy = numpy.amax(subarray2, axis=0)
+            max_pr_xz = numpy.amax(subarray2, axis=1)
+            max_pr_yz = numpy.amax(subarray2, axis=2).transpose()
+
+
+            [xy_roi_full, outroi] = self.GetEdgeCoords(numpy.amax(acroi, axis=0))
+            xy_roi_edge = self.matrix_order_wo_conv(xy_roi_full)
+
+            pg1=[]
+            for i in range(len(xy_roi_edge)):
+                a= xy_roi_edge[i][0] - (position[0]-r-5)
+                b= xy_roi_edge[i][1] - (position[1]-r-5)
+                pg1.append((5*b+2,5*a+2))
+            pg1.append((pg1[0]))
+
+            #xz plane
+            [xz_roi_full, outroi] = self.GetEdgeCoords(numpy.amax(acroi, axis=1))
+            xz_roi_edge = self.matrix_order_wo_conv(xz_roi_full)
+
+            pg2=[]
+            for i in range(len(xz_roi_edge)):
+                b = xz_roi_edge[i][1] - (position[1]-r-5)
+                pg2.append((b, xz_roi_edge[i][0]))
+            pg2.append((pg2[0]))
+
+            #yz plane
+            max_roi_yz = numpy.amax(acroi, axis=2)
+            [yz_roi_full, outroi] = self.GetEdgeCoords(max_roi_yz)
+            yz_roi_edge = self.matrix_order_wo_conv(yz_roi_full)
+
+            pg3=[]
+            for i in range(len(yz_roi_edge)):
+                b= yz_roi_edge[i][1] - (position[0]-r-5)
+                pg3.append(( yz_roi_edge[i][0],b))
+            pg3.append((pg3[0]))
+
+            #RGB
+            xy=numpy.zeros((len(max_pr_xy),len(max_pr_xy[0]),3), dtype=numpy.uint8)
+            for i in range(len(max_pr_xy)):
+                for j in range(len(max_pr_xy[0])):
+                    xy[i,j,1]=max_pr_xy[i][j]
+
+
+            from PIL import ImageDraw
+            import PIL.Image
+
+            slicesview=numpy.zeros((5*len(max_pr_xy[0])+5*len(max_pr_xz)*2,5*len(max_pr_xy)+2*5*len(max_pr_yz[0]),3),dtype=numpy.uint8)
+            slicesview[:,:,:]+=255
+
+            im=PIL.Image.fromarray(slicesview,'RGB')
+            im1=PIL.Image.fromarray(xy,'RGB').resize((5*len(xy),5*len(xy)),resample=PIL.Image.NEAREST)
+            from shapely.geometry import Polygon,Point
+            draw1=ImageDraw.Draw(im1)
+            poly1=Polygon(pg1)
+            for i in range(len(inside_roi)):
+                if poly1.contains(Point(inside_roi[i][0], inside_roi[i][1])):
+                    im1.putpixel((inside_roi[i][0], inside_roi[i][1]),(255,0,0))
+            draw1.line(pg1,width=2)
+            im.paste(im1,box=(0,0))
+            a=numpy.zeros((len(max_pr_xz),len(max_pr_xz[0]),3), dtype=numpy.uint8)
+            for i in range(len(max_pr_xz)):
+                for j in range(len(max_pr_xz[0])):
+                    a[i,j,1]=max_pr_xz[i][j]
+            b=numpy.zeros((len(max_pr_yz),len(max_pr_yz[0]),3), dtype=numpy.uint8)
+            for i in range(len(max_pr_yz)):
+                for j in range(len(max_pr_yz[0])):
+                    b[i,j,1]=max_pr_yz[i][j]
+            im2 = PIL.Image.fromarray(a,'RGB').resize((5*len(max_pr_xz[0]),5*2*len(max_pr_xz)),resample=PIL.Image.NEAREST)
+            draw2=ImageDraw.Draw(im2)
+            for i in range(len(pg2)):
+                pg2[i]=(5*pg2[i][0]+2, 5*2*pg2[i][1]+4)
+            pg2.append(pg2[0])
+            poly2=Polygon(pg2)
+            for i in range(len(inside_roi)):
+                if poly2.contains(Point(inside_roi[i][0], inside_roi[i][2])):
+                    im2.putpixel((inside_roi[i][0],inside_roi[i][2]),(255,0,0))
+            draw2.line(pg2,width=2)
+            im.paste(im2,box=(0,5*len(max_pr_xy)))
+            im3 = PIL.Image.fromarray(b,'RGB').resize((5*2*len(max_pr_yz[0]),5*len(max_pr_yz)),resample=PIL.Image.NEAREST)
+            draw3=ImageDraw.Draw(im3)
+
+            for i in range(len(pg3)):
+                pg3[i]=(5*2*pg3[i][0]+4,5*pg3[i][1]+2)
+            pg3.append(pg3[0])
+            poly3=Polygon(pg3)
+
+
+            for i in range(len(inside_roi)):
+                if poly3.contains(Point(inside_roi[i][2], inside_roi[i][1])):
+                    im3.putpixel((inside_roi[i][2],inside_roi[i][1]),(255,0,0))
+
+            draw3.line(pg3,width=2)
+            im.paste(im3,box=(5*len(max_pr_xy),0))
+            plt.imshow(im,interpolation="nearest")
+            plt.axis("off")
+            plt.show()
+            self.viewer.remove_roi(self.roi)
+            inside_roi3=[]
+            for i in range(4):
+                inside_roi3.append([])
+            inside_roi3[channel_storm] = inside_roi_storm
+            self.viewer.add_roi_3d(new_roi=acroi, xy_pointlist=ACROI, storm_inside=inside_roi3)
+
+        else:
+
+            macwe.levelset = self.ActiveContourCircleLevelset(img.shape, position, r)  #circle center coordinates, radius
+            # Visual evolution.
+            #plt.figure()
+            acroi = morphsnakes.evolve_visual(macwe, num_iters=iteration,
                                           background=img)  # its final state is a ROI, which should be used to filter
                                           # the STORM coordinates
+            # applies dilation
+            if dilation_nr!=0:
+                acroi = scipy.ndimage.morphology.binary_dilation(acroi, iterations=dilation_nr)
 
-        # applies dilation
-        if dilation_nr!=0:
-            acroi = scipy.ndimage.morphology.binary_dilation(acroi, iterations=dilation_nr)
+            #plt.imshow(acroi)
+            #plt.figure()
+            #plt.imshow(dilated_acroi)
+            #plt.show()
 
-        #plt.imshow(acroi)
-        #plt.figure()
-        #plt.imshow(dilated_acroi)
-        #plt.show()
+            [edgecoords, outroi] = self.GetEdgeCoords(acroi)
+            ACROI = []
+            CurrentPoint = edgecoords[0]
+            ACROI.append(CurrentPoint)
+            PointAdded = True
+            while PointAdded:
+                PointAdded=False
+                NeighbouringPoints=0
+                MinDist=2
+                MinPoint=[]
+                for point in edgecoords:
+                    if math.fabs(CurrentPoint[0]-point[0])<2 and math.fabs(CurrentPoint[1]-point[1])<2:
+                        Dist=math.sqrt((CurrentPoint[0]-point[0])*(CurrentPoint[0]-point[0])+(CurrentPoint[1]-point[1])
+                                       *(CurrentPoint[1]-point[1]))
+                        if Dist<MinDist and Dist!=0:
+                            MinDist=Dist
+                            MinPoint=point
+                if MinPoint!=[]:
+                    PointAdded=True
+                    edgecoords.remove(MinPoint)
+                    ACROI.append(MinPoint)
+                    CurrentPoint=MinPoint
 
+            for i in range(len(ACROI)):
+                ACROI[i] = [ACROI[i][1] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeY'] + conf_offset[1] + zoom / 2.0,
+                            ACROI[i][0] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeX'] + conf_offset[0] + zoom / 2.0]#zoom
 
+            if is_spline_on==True:
+                # applying spline
+                # spline parameters
+                s = 5.0  # smoothness parameter
+                k = 4  # spline order
+                nest = -1  # estimate of number of knots needed (-1 = maximal)
+                # find the knot points
+                x = numpy.asarray(ACROI)[:, 0]
 
-        [edgecoords, outroi] = self.GetEdgeCoords(acroi)
-        ACROI = []
-        CurrentPoint = edgecoords[0]
-        ACROI.append(CurrentPoint)
-        PointAdded = True
-        while PointAdded:
-            PointAdded=False
-            NeighbouringPoints=0
-            MinDist=2
-            MinPoint=[]
-            for point in edgecoords:
-                if math.fabs(CurrentPoint[0]-point[0])<2 and math.fabs(CurrentPoint[1]-point[1])<2:
-                    Dist=math.sqrt((CurrentPoint[0]-point[0])*(CurrentPoint[0]-point[0])+(CurrentPoint[1]-point[1])
-                                   *(CurrentPoint[1]-point[1]))
-                    if Dist<MinDist and Dist!=0:
-                        MinDist=Dist
-                        MinPoint=point
-            if MinPoint!=[]:
-                PointAdded=True
-                edgecoords.remove(MinPoint)
-                ACROI.append(MinPoint)
-                CurrentPoint=MinPoint
-
-        for i in range(len(ACROI)):
-            ACROI[i] = [ACROI[i][1] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeY'] + conf_offset[1] + zoom / 2.0,
-                        ACROI[i][0] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeX'] + conf_offset[0] + zoom / 2.0]#zoom
-
-        if is_spline_on==True:
-            # applying spline
-            # spline parameters
-            s = 5.0  # smoothness parameter
-            k = 4  # spline order
-            nest = -1  # estimate of number of knots needed (-1 = maximal)
-            # find the knot points
-            x = numpy.asarray(ACROI)[:, 0]
-
-            y = numpy.asarray(ACROI)[:, 1]
+                y = numpy.asarray(ACROI)[:, 1]
 
 
-            z=numpy.zeros(len(x))
-            #tckp,u = scipy.interpolate.splprep([x,y,z],s=s,k=k)
-            tckp,u = scipy.interpolate.splprep([x,y,z],s=s,k=k,nest=-1)
+                z=numpy.zeros(len(x))
+                #tckp,u = scipy.interpolate.splprep([x,y,z],s=s,k=k)
+                tckp,u = scipy.interpolate.splprep([x,y,z],s=s,k=k,nest=-1)
 
-            # evaluate spline, including interpolated points
-            xnew, ynew, znew = splev(numpy.linspace(0, 1, len(x) / 2), tckp)
-            
-            xmin=numpy.amin(x)
-            xmax=numpy.amax(x)
-            ymin=numpy.amin(y)
-            ymax=numpy.amax(y)
-            
-            sxmin=numpy.amin(xnew)
-            sxmax=numpy.amax(xnew)
-            symin=numpy.amin(ynew)
-            symax=numpy.amax(ynew)
-            
-            Spline=True
-            if sxmin<xmin-500:
-                Spline=False
-            if symin<ymin-500:
-                Spline=False
-            if sxmax>xmax+500:
-                Spline=False
-            if symax>ymax+500:
-                Spline=False
-            # print Spline
+                # evaluate spline, including interpolated points
+                xnew, ynew, znew = splev(numpy.linspace(0, 1, len(x) / 2), tckp)
 
-            if Spline:
-                ACROI = []
-                for k in range(len(xnew)):
-                    ACROI.append([xnew[k], ynew[k]])
+                xmin=numpy.amin(x)
+                xmax=numpy.amax(x)
+                ymin=numpy.amin(y)
+                ymax=numpy.amax(y)
 
-        self.viewer.remove_roi(self.roi)
-        self.viewer.add_roi('active_contour', new_roi=ACROI)
-        self.formWidget.window().close()
+                sxmin=numpy.amin(xnew)
+                sxmax=numpy.amax(xnew)
+                symin=numpy.amin(ynew)
+                symax=numpy.amax(ynew)
+
+                Spline=True
+                if sxmin<xmin-500:
+                    Spline=False
+                if symin<ymin-500:
+                    Spline=False
+                if sxmax>xmax+500:
+                    Spline=False
+                if symax>ymax+500:
+                    Spline=False
+                # print Spline
+
+                if Spline:
+                    ACROI = []
+                    for k in range(len(xnew)):
+                        ACROI.append([xnew[k], ynew[k]])
+
+            self.viewer.remove_roi(self.roi)
+            self.viewer.add_roi('active_contour', new_roi=ACROI)
+            self.formWidget.window().close()
 
 
 class AnalysisDialog(Ui_Dialog_analysis):
@@ -314,7 +604,6 @@ class AnalysisDialog(Ui_Dialog_analysis):
         self.roi_perimeter = None
         self.roi_area = None
         self.main = None
-
         self.analyses = []
         self.analyses.append(NlpAnalysis('analysis_nlp'))
         self.analyses.append(ConvexHullAnalysis('analysis_convex_hull'))
@@ -489,6 +778,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
 
 
+
         result_files = os.listdir(result_folder)
         result_files2=[]
         for file in result_files:
@@ -498,8 +788,9 @@ class AnalysisDialog(Ui_Dialog_analysis):
         roicoords_files = os.listdir(roicoords_folder)
         roicoords_files2=[]
         for file in roicoords_files:
-            if file.endswith('_RoiCoords.txt'):
+            if file.endswith('.txt'):
                 roicoords_files2.append(file)
+
         roiattr_files = os.listdir(roiattr_folder)
         roiattr_files2=[]
         for file in roiattr_files:
@@ -514,6 +805,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
         conf_b=False
         roi_b=False
         res_b=False
+
         if len(confocal_files2) > 0:
              conf_b = True
         if len(roiattr_files2) > 0:
@@ -532,8 +824,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
             b = str(tmp4[1])
 
         if res_b:
-            for file in result_files2:
-                tag=file[:file.find('_Results.txt')]
+            for file in roicoords_files2:
+                tag=file[:file.find('.txt')]
                 filepath_w = roicoords_folder+'/results/'+file
                 storm_image = images.StormImage(file)
                 storm_image.coords_cols = (self.main_window.storm_settings.storm_config_fileheader_x,\
@@ -545,9 +837,10 @@ class AnalysisDialog(Ui_Dialog_analysis):
                     self.main_window.storm_settings.storm_config_fileheader_photon,
                     self.main_window.storm_settings.storm_config_fileheader_frame
                 )
-                storm_image.file_path = roicoords_folder+'/'+tag+'_RoiCoords.txt'
+                storm_image.file_path = roicoords_folder+'/'+tag+'.txt'
                 storm_image.parse()
                 roi_border= []
+
                 with open(roiattr_folder+'/'+tag+'_RoiAttr.txt') as attr_file:
 
                         line = attr_file.readline()
@@ -590,6 +883,11 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
 
                 attr_file.close()
+
+                roi_tag=None
+                conf_name=None
+                x_offset=None
+                y_offset=None
                 if conf_name is not None and self.main_window.viewer.current_confocal_image is not None and conf_b:
 
                     confocal_image = images.ConfocalImage(QString(str(conf_name)))

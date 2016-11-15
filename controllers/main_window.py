@@ -343,6 +343,9 @@ class MainWindow(Ui_MainWindow):
             if self.viewer.current_storm_image:
                 roi = self.storm_roi_list.currentItem()
                 if roi:
+                    print "roi"
+                    print roi
+                    print type(roi).__name__
                     if type(roi).__name__ == 'EllipseRoi' or type(roi).__name__ == 'CircleRoi':
                         storm_data = self.viewer.display.getEllipseROIPoints(roi.roi)
                         roi_perimeter = self.viewer.display.lengthOfEllipseROI(roi.roi)
@@ -355,6 +358,11 @@ class MainWindow(Ui_MainWindow):
                         storm_data = self.viewer.display.getActiveContourROIPoints(roi.roi)
                         roi_perimeter = self.viewer.display.lengthOfActiveContourROI(roi.roi)
                         roi_area = self.viewer.display.areaOfActiveContourROI(roi.roi)
+                    elif type(roi).__name__ == 'ActiveContourRoi3d':
+                        print "3d"
+                        storm_data = roi.storm
+                        roi_perimeter = 0
+                        roi_area = 0
                     # self.show_error(message=roi_tag + ' ROI is selected. Using data selected by this ROI.')
                 else:
                     storm_data = self.viewer.display.StormData_filtered
@@ -405,7 +413,8 @@ class MainWindow(Ui_MainWindow):
                             roi,
                             self.viewer.display.ConfocalZNum,
                             self.viewer.display.ConfocalOffset(),
-                            self.viewer.current_confocal_image.ConfocalMetaData['SizeX']
+                            self.viewer.current_confocal_image.ConfocalMetaData['SizeX'],
+                            self.viewer.display.StormData_filtered
                         )
                 else:
                     self.show_error(message='Create and select a Circle ROI to use active contour evolution feature.')

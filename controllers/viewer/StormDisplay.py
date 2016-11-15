@@ -17,6 +17,7 @@ import os
 import ConfocalLUT
 import gc
 import copy
+import numpy
 import sys
 import matplotlib.pyplot as plt
 
@@ -324,6 +325,93 @@ class StormDisplay(object):
         self.Viewbox.addItem(r1)
         return [pg.QtGui.QGraphicsPolygonItem(QtGui.QPolygonF(QtPoints)), QtPoints, DrawnElements]
 
+    def GetEdgeCoords(self, matrix):
+        edgecoords = []
+        outmatrix = numpy.copy(matrix)
+
+        for x in range(numpy.shape(matrix)[0]):
+            for y in range(numpy.shape(matrix)[1]):
+                if matrix[x, y] == 1:
+                    nn = self.CountNeighborNumber(x, y, matrix)
+                    if nn > 0:
+
+                        edgecoords.append([x, y])
+                    else:
+                        outmatrix[x, y] = 0
+
+        return [edgecoords, outmatrix]
+
+    def CountNeighborNumber(self, x, y, matrix):
+        nn = 0
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                try:
+                    if matrix[x + i, y + j] == 0:
+                        nn += 1
+                except:
+                    nn +=1
+        return nn
+
+    def matrix_order(self, edgecoords):
+        ACROI=[]
+        CurrentPoint = edgecoords[0]
+        ACROI.append(CurrentPoint)
+        PointAdded = True
+        while PointAdded:
+            PointAdded=False
+            NeighbouringPoints=0
+            MinDist=2
+            MinPoint=[]
+            for point in edgecoords:
+                if math.fabs(CurrentPoint[0]-point[0])<2 and math.fabs(CurrentPoint[1]-point[1])<2:
+                    Dist=math.sqrt((CurrentPoint[0]-point[0])*(CurrentPoint[0]-point[0])+(CurrentPoint[1]-point[1])
+                                       *(CurrentPoint[1]-point[1]))
+                    if Dist<MinDist and Dist!=0:
+                        MinDist=Dist
+                        MinPoint=point
+            if MinPoint!=[]:
+                PointAdded=True
+                edgecoords.remove(MinPoint)
+                ACROI.append(MinPoint)
+                CurrentPoint=MinPoint
+        zoom =1000.0 * self.ConfocalMetaData['SizeX']
+        print self.ConfocalOffset()
+        for i in range(len(ACROI)):
+            ACROI[i] = [ACROI[i][1] * 1000.0 * self.ConfocalMetaData['SizeY'] + self.ConfocalOffset()[1] * 100.0 * self.ConfocalMetaData['SizeY'] + zoom / 2.0,
+                        ACROI[i][0] * 1000.0 * self.ConfocalMetaData['SizeX'] + self.ConfocalOffset()[0] * 100.0 * self.ConfocalMetaData['SizeX'] + zoom / 2.0]#zoom
+        return ACROI
+
+    def createActiveContourROI_3d(self, PointList):
+        # PointList coordinates of point as x,y. Ex: [[0,0], [5,4], [3,2] ....]
+        print "PL"
+
+        [edgecoords, outroi] = self.GetEdgeCoords(PointList[7])
+        xy_pointlist = self.matrix_order(edgecoords)
+
+        print xy_pointlist
+
+        QtPoints = []
+        DrawnElements = []
+        FirstTime = True
+        for PP in xy_pointlist:
+            QtPoints.append(pg.Point(PP))
+            if FirstTime:
+                FirstTime = False
+                FirstPoint = PP
+            else:
+                r1 = pg.QtGui.QGraphicsLineItem(PrevPoint[0], PrevPoint[1], PP[0], PP[1])
+                r1.setPen(pg.mkPen('w'))
+                DrawnElements.append(r1)
+                self.Viewbox.addItem(r1)
+            PrevPoint = PP
+        #closing the roi
+        QtPoints.append(pg.Point(FirstPoint))
+        r1 = pg.QtGui.QGraphicsLineItem(PP[0], PP[1], FirstPoint[0], FirstPoint[1], )
+        r1.setPen(pg.mkPen('w'))
+        DrawnElements.append(r1)
+        self.Viewbox.addItem(r1)
+        return [pg.QtGui.QGraphicsPolygonItem(QtGui.QPolygonF(QtPoints)), QtPoints, DrawnElements]
+
     def lengthOfActiveContourROI(self, roi):
         # this QtPoints parameter is the second return value of the createActiveContourROI function
         RoiCorners = roi[1]
@@ -355,7 +443,13 @@ class StormDisplay(object):
 
     def filterROIPoints(self, roi,roitype,channels):
         if roitype=='Activecontour':
-            PolygonItem = roi[0]         
+            PolygonItem = roi[0]
+            print "test"
+            print roi
+            print roi.type()
+            print roi[0]
+            print roi[0].type
+            print roi[0].shape
             roiShape = PolygonItem.shape()
         elif roitype=='Freehand':
             roiShape = roi.shape()

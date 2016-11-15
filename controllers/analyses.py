@@ -1448,10 +1448,6 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
 
     def compute(self, points):
         print "EuclideanDistanceBetweenChannelAnalysis"
-        print "confocal offset"
-        print self.confocal_file_name
-        print self.confocal_offset
-        print self.StormDisplay.ConfocalData
 
 
         base_channel_nr = self.visible_storm_channel_names.index(
@@ -1464,8 +1460,6 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
             channel=int(self.analysis_euclidean_between_channel_from_confocal)
             channelstr=str(channel)
             img=self.StormDisplay.ConfChannelToShow[channel]
-            print "img"
-            print img
 
             im=scipy.ndimage.zoom(img,(0.1,0.1),order=0)/ 255.0
             #fig2 = plt.figure(facecolor=(0, 0, 0), edgecolor=(0, 0, 0))
@@ -1490,17 +1484,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 base_coords[:, 0] = (numpy.asarray(points[base_channel_nr])[:, 0])/pix_size-offset[0]
                 base_coords[:, 1] = (numpy.asarray(points[base_channel_nr])[:, 1])/pix_size-offset[1]
                 base_coords[:, 2] = numpy.asarray(points[base_channel_nr])[:, 3]/pix_size
-                """
-                print "points"
-                print numpy.asarray(points[base_channel_nr])[:, 0]
-                print numpy.asarray(points[base_channel_nr])[:, 1]
-                print numpy.asarray(points[base_channel_nr])[:, 3]
-                print "base coords"
-                print base_coords
-                print "offset"
-                print offset
-                print ConfocalSizeMultiplier
-                """
+
 
                 image_max = ndimage.maximum_filter(im, size=3, mode='constant')
                 maxima = (im == image_max)
@@ -1534,16 +1518,8 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 boundaries[1]=numpy.amax(base_coords[:, 0])
                 boundaries[2]=numpy.amin(base_coords[:, 1])
                 boundaries[3]=numpy.amax(base_coords[:, 1])
-                """
-                print "coordinates"
-                print coordinates
-                print len(coordinates)
-                print self.ConfocalMetaData
 
 
-                print "boundaries"
-                print boundaries
-                """
                 # deleting local maxima which have a bigger distance from the bouton than the 2*threshold
 
                 distant_inds = numpy.where(numpy.asarray(coordinates[:,0]) < (boundaries[0]-2*distance_threshold))
@@ -1557,10 +1533,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
 
                 distant_inds = numpy.where(numpy.asarray(coordinates[:,1]) > (boundaries[3]+2*distance_threshold))
                 coordinates = numpy.delete(coordinates, distant_inds, 0)
-                """
-                print "coordinates2"
-                print coordinates
-                """
+
                 near_coordinates=[]
 
                 for nlg_coord in coordinates:
@@ -2614,6 +2587,8 @@ class BayesianClusteringAnalysis(Analysis):
                     maxv = svector[i][2]
                     ind = i
 
+
+
             ok = True
             try:
                 a = svector[ind][3].membership
@@ -2721,7 +2696,7 @@ class BayesianClusteringAnalysis(Analysis):
                     print ("All points belong to the background")
 
             if ok:
-
+                first=True
                 for i in clustnums:
                     el = vec.count(i)
                     indexes = svector[ind][3][i]
@@ -2745,10 +2720,11 @@ class BayesianClusteringAnalysis(Analysis):
                                                         self.storm_channel_list[m] + '\t' + str(i+1) + '\t' \
                                                         + str(el) + '\t' + str(hull3D_volume/1000000000) + \
                                                         '\t' + str(maxdistance/1000)
-                    if i==0:
+                    if first:
                         self.computed_values_multiple += '\t' + str(svector[ind][0]) + '\t' + str(svector[ind][1]) + '\n'
                     else:
                         self.computed_values_multiple += '\n'
+                    first=False
 
 
 

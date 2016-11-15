@@ -37,3 +37,7 @@ class FreehandRoi(Roi):
 class ActiveContourRoi(Roi):
     def __init__(self, *args, **kwargs):
         super(ActiveContourRoi, self).__init__(*args, **kwargs)
+
+class ActiveContourRoi3d(Roi):
+    def __init__(self, *args, **kwargs):
+        super(ActiveContourRoi3d, self).__init__(*args, **kwargs)
