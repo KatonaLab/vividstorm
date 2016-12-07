@@ -156,9 +156,12 @@ class Analysis(RunnableComponent):
 
     def _write_results_to_file_batch(self, save_all_data, export_data, filename):
 
-
-        self.output_file = filename[:-4] + "_" + type(self).__name__ + '.' + self.output_file_extension
-        self.output_file_export = filename[:-4] + "_" + type(self).__name__ + '_batch.' + self.output_file_export_extension
+        if "RoiCoords" in str(filename):
+            self.output_file = self.working_directory+'/'+filename[:-14] + "_" + type(self).__name__ + '.' + self.output_file_extension
+            self.output_file_export = self.working_directory+'/'+filename[:-14] + "_" + type(self).__name__ + '.' + self.output_file_export_extension
+        else:
+            self.output_file = self.working_directory+'/'+filename[:-4] + "_" + type(self).__name__ + '.' + self.output_file_extension
+            self.output_file_export = self.working_directory+'/'+filename[:-4] + "_" + type(self).__name__ + '.' + self.output_file_export_extension
         # write to the own file of the given analyse, complex values
         if save_all_data:
             f = open(self.output_file, 'w')
@@ -174,16 +177,11 @@ class Analysis(RunnableComponent):
             f.close()
 
     def run_batch(self, points, channels_num, dimensions, filename, roi_tag, confocal_image_name, offset, confocal_image,meta):
-        if str(filename).find("Results") == -1:
-            pass
-        else:
-            index = str(filename).find("results")+8
-            self.storm_file_name = filename[index:-12]
-            self.storm_file_path = str(filename)
-            print self.storm_file_name
-            print self.storm_file_path
-            print filename
 
+        if "RoiCoords" in filename:
+            self.storm_file_name=filename[:-14]
+        else:
+            self.storm_file_name=filename[:-4]
         self.ROI_tag = roi_tag
         self.computed_values_multiple=None
         if not confocal_image_name == "":
@@ -1215,7 +1213,6 @@ class DBScanAnalysis(Analysis):
                             for om in range(len(cluster)):
                                 if self.EucDistance3D(cluster[cm, :3], cluster[om, :3]) > maxdistance:
                                     maxdistance = self.EucDistance3D(cluster[cm, :3], cluster[om, :3])
-
                         self.computed_values_multiple += self.storm_file_name + '\t' + self.ROI_tag + '\t' + \
                                                          self.storm_channel_list[m] + '\t' + str(c) + '\t' + str(
                             nlp_per_cluster) + '\t' + str(hull3D_volume / 1000000000) + '\t' + str(
@@ -2518,6 +2515,16 @@ class BayesianClusteringAnalysis(Analysis):
         self.computed_values_multiple = 'storm_file\tROI_tag\tchannel_ID\tcluster_ID\tNLP_per_cluster' \
                                         '\tV_hull_per_cluster(um^3)\tmax_distance_per_cluster(um)\tbest_radius(nm)\tbest_threshold\n'
 
+
+        fig=plt.figure(facecolor=(0, 0, 0), edgecolor=(0, 0, 0))
+        fig.hold(True)
+        fig.patch.set_facecolor((0, 0, 0))
+        ax1=fig.add_subplot(111, axisbg='k', projection='3d', aspect='equal')
+        ax1.grid(False)
+        ax1.set_axis_off()
+        ax1.set_frame_on(False)
+        ax1.set_title('Bayesian clustering', color='w')
+
         coords = None
         channel_nr = numpy.where(numpy.asarray(self.storm_channels_visible) == True)
         visible_channel_nr = numpy.asarray(channel_nr)[0]
@@ -2591,7 +2598,7 @@ class BayesianClusteringAnalysis(Analysis):
 
             svector = self.Kclust(pts=coords, xlim=xlim, ylim=ylim, rseq=rseq, thseq=thseq, sds=sdvalues, psd=psd, minsd=minsd, maxsd=maxsd, \
                                     useplabel=useplabel, alpha=alpha, pb=pbackground, hv=hv)
-
+            """
             maxv = svector[0][2]
 
             ind = 0
@@ -2600,16 +2607,18 @@ class BayesianClusteringAnalysis(Analysis):
                     maxv = svector[i][2]
                     ind = i
 
-
+            """
 
             ok = True
             try:
-                a = svector[ind][3].membership
+                #a = svector[ind][3].membership
+                a = svector[3].membership
             except:
                 ok = False
                 print ("All points belong to the background")
 
             if ok:
+                """
                 r=svector[ind][0]
                 th=svector[ind][1]
                 A=svector[ind][4]
@@ -2662,22 +2671,29 @@ class BayesianClusteringAnalysis(Analysis):
                     if (counter[i]==max(counter)):
                         maxind.append(i)
 
-                print rss
-                print thss
-                """
+
+
                 maxind = maxind[0]
                 for i in range(len(svector)):
                     if svector[i][3] != 0:
                         if memberships[maxind] == svector[i][3].membership:
                             ind=i
                             break
-                """
+
+
                 A0 = svector[ind][4]
                 B0 = svector[ind][5]
 
                 index_cl0=svector[ind][8]
-                Z = svector[ind][7]
+                Z0 = svector[ind][7]
                 list = svector[ind][3]
+                """
+                A0 = svector[4]
+                B0 = svector[5]
+
+                index_cl0=svector[8]
+                Z0 = svector[7]
+                list = svector[3]
                 ivector = []
                 for i in list:
                     if (len(i)==1):
@@ -2688,12 +2704,16 @@ class BayesianClusteringAnalysis(Analysis):
                 avector = []
                 bvector = []
                 for j in range(len(ivector)):
-                    ivector2.append(svector[ind][3].membership[ivector[j]])
+                    #ivector2.append(svector[ind][3].membership[ivector[j]])
+                    ivector2.append(svector[3].membership[ivector[j]])
+
                     avector.append(ivector[j])
 
-                clust_number = len(svector[ind][3])
+                #clust_number = len(svector[ind][3])
+                clust_number = len(svector[3])
 
-                vec = svector[ind][3].membership
+                #vec = svector[ind][3].membership
+                vec = svector[3].membership
                 clustnums=set(vec)
                 #svector[ind][3].membership=np.array([svector[ind][3].membership])
                 for i in range(len(ivector2)):
@@ -2702,6 +2722,7 @@ class BayesianClusteringAnalysis(Analysis):
                     clustnums.remove(ivector2[i])
                 A = numpy.delete(A0, avector)
                 B = numpy.delete(B0, avector)
+                Z= numpy.delete(Z0, avector)
                 index_cl=numpy.delete(index_cl0, avector)
 
                 if(len(vec)==0):
@@ -2712,7 +2733,8 @@ class BayesianClusteringAnalysis(Analysis):
                 first=True
                 for i in clustnums:
                     el = vec.count(i)
-                    indexes = svector[ind][3][i]
+                    #indexes = svector[ind][3][i]
+                    indexes = svector[3][i]
                     elements = []
                     for j in indexes:
                         elements.append([A0[j], B0[j], Z[j]])
@@ -2724,6 +2746,7 @@ class BayesianClusteringAnalysis(Analysis):
                         simplices = numpy.column_stack((numpy.repeat(hull3D.vertices[0], hull3D.nsimplex), hull3D.simplices))
                         tets = hull3D.points[simplices]
                         hull3D_volume = numpy.sum(self.tetrahedron_volume(tets[:, 0], tets[:, 1], tets[:, 2], tets[:, 3]))
+
                     maxdistance = 0
                     for cm in range(len(elements)):
                         for om in range(len(elements)):
@@ -2733,8 +2756,10 @@ class BayesianClusteringAnalysis(Analysis):
                                                         self.storm_channel_list[m] + '\t' + str(i+1) + '\t' \
                                                         + str(el) + '\t' + str(hull3D_volume/1000000000) + \
                                                         '\t' + str(maxdistance/1000)
+
                     if first:
-                        self.computed_values_multiple += '\t' + str(svector[ind][0]) + '\t' + str(svector[ind][1]) + '\n'
+                        #self.computed_values_multiple += '\t' + str(svector[ind][0]) + '\t' + str(svector[ind][1]) + '\n'
+                        self.computed_values_multiple += '\t' + str(svector[0]) + '\t' + str(svector[1]) + '\n'
                     else:
                         self.computed_values_multiple += '\n'
                     first=False
@@ -2744,31 +2769,45 @@ class BayesianClusteringAnalysis(Analysis):
 
                 #print svector[ind][0]
                 #print svector[ind][1]
-                if self.display_plots == True:
+                colorlist = numpy.ones((len(vec), 3))
 
-                    colorlist = numpy.ones((len(vec), 3))
+                for s in range(clust_number):
+                    inds = numpy.where(numpy.asarray(vec) == s + 1)
+                    assignedcolor = matplotlib.colors.hsv_to_rgb([(s / 1.0) / clust_number, 1.0, 1.0])
+                    colorlist[inds, :] = numpy.asarray(assignedcolor)
+                scalefactor=50
+                if m == 0:
+                    ax1.scatter(A,B,zs=Z, zdir='z', s=scalefactor * 2,
+                                 c=numpy.asarray(colorlist), marker='.')
+                elif m == 1:
+                    ax1.scatter(A,B,zs=Z, zdir='z', s=scalefactor,
+                                 c=numpy.asarray(colorlist), marker='s')
+                elif m == 2:
+                    ax1.scatter(A,B,zs=Z, zdir='z', s=scalefactor,
+                                 c=numpy.asarray(colorlist), marker='V')
+                else:
+                    ax1.scatter(A,B,zs=Z, zdir='z', s=scalefactor,
+                                 c=numpy.asarray(colorlist), marker='D')
+        if self.display_plots == True:
 
-                    for s in range(clust_number):
-                        inds = numpy.where(numpy.asarray(vec) == s + 1)
-                        assignedcolor = matplotlib.colors.hsv_to_rgb([(s / 1.0) / clust_number, 1.0, 1.0])
-                        colorlist[inds, :] = numpy.asarray(assignedcolor)
 
-                    fig=plt.figure(facecolor=(0, 0, 0), edgecolor=(0, 0, 0))
-                    fig.hold(True)
-                    fig.patch.set_facecolor((0, 0, 0))
-                    ax1=fig.add_subplot(111, axisbg='k', projection='3d', aspect='equal')
-                    ax1.grid(False)
-                    ax1.set_axis_off()
-                    ax1.set_frame_on(False)
-                    ax1.set_title('Bayesian clustering', color='w')
-                    ax1.scatter(A, B, c=numpy.asarray(colorlist), marker='o')
-                    ax1.set_xlabel('x coordinates [nm]', fontsize=15)
-                    ax1.set_ylabel('y coordinates [nm]', fontsize=15)
-                    plt.setp(ax1.get_xticklabels(), rotation='vertical', fontsize=14)
-                    plt.setp(ax1.get_yticklabels(), fontsize=14)
-                    plt.gca().invert_yaxis()
-                    plt.gca().set_aspect('equal')
-                    plt.show()
+
+
+            ax1.set_xlabel('x coordinates [nm]', fontsize=15)
+            ax1.set_ylabel('y coordinates [nm]', fontsize=15)
+            plt.setp(ax1.get_xticklabels(), rotation='vertical', fontsize=14)
+            plt.setp(ax1.get_yticklabels(), fontsize=14)
+            plt.gca().invert_yaxis()
+            plt.gca().set_aspect('equal')
+            max_range = numpy.array([A.max() - A.min(), B.max() - B.min(), Z.max() - Z.min()]).max() / 2.0
+
+            mid_x = (A.max() + A.min()) * 0.5
+            mid_y = (B.max() + B.min()) * 0.5
+            mid_z = (Z.max() + Z.min()) * 0.5
+            ax1.set_xlim(mid_x - max_range, mid_x + max_range)
+            ax1.set_ylim(mid_y - max_range, mid_y + max_range)
+            ax1.set_zlim(mid_z - max_range, mid_z + max_range)
+            plt.show()
 
         print "Bayesian_clustering_analysis ready"
 

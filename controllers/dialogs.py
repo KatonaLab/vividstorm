@@ -32,7 +32,8 @@ import numpy
 import scipy
 import scipy.cluster.vq as Clust
 
-from default_config import version as version_num
+from default_config import version as \
+    version_num
 from analyses import *
 from scipy import ndimage
 from scipy.interpolate import splprep, splev
@@ -687,8 +688,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
             folder_dialog.setFileMode(QtGui.QFileDialog.Directory)
             folder_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
             title = "Choose folder"
-            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, \
-                                                                       "/home")
+            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, self.main_window.working_directory)
             self.lineEdit_analysis_folder_name.setText(batch_folder_name)
 
     def choose_batch_analyses_roiattr(self):
@@ -697,8 +697,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
             folder_dialog.setFileMode(QtGui.QFileDialog.Directory)
             folder_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
             title = "Choose folder"
-            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, \
-                                                                       "/home")
+            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, self.main_window.working_directory)
+
             self.lineEdit_analysis_roiattr_name.setText(batch_folder_name)
 
     def choose_batch_analyses_roicoords(self):
@@ -707,8 +707,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
             folder_dialog.setFileMode(QtGui.QFileDialog.Directory)
             folder_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
             title = "Choose folder"
-            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, \
-                                                                       "/home")
+            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title,self.main_window.working_directory)
+
             self.lineEdit_analysis_roicoords_name.setText(batch_folder_name)
 
     def choose_batch_analyses_confocal(self):
@@ -717,8 +717,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
             folder_dialog.setFileMode(QtGui.QFileDialog.Directory)
             folder_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
             title = "Choose folder"
-            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, \
-                                                                       "/home")
+            batch_folder_name = QtGui.QFileDialog.getExistingDirectory(folder_dialog,title, self.main_window.working_directory)
+
             self.lineEdit_analysis_confocal_name.setText(batch_folder_name)
 
 
@@ -755,6 +755,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
     def run_batch_analyses(self):
         print "Batch analyses"
 
+
         roicoords_folder = self.lineEdit_analysis_roicoords_name.text()
         result_folder = self.lineEdit_analysis_folder_name.text()
 
@@ -769,15 +770,9 @@ class AnalysisDialog(Ui_Dialog_analysis):
         if confocal_folder == "":
             confocal_folder = roicoords_folder
 
-        if not os.path.exists(roicoords_folder+'/results'):
-            os.makedirs(str(roicoords_folder)+'/results')
+
 
         self.main_window.status_bar.showMessage('Running analyses, please wait...')
-
-
-
-
-
 
         result_files = os.listdir(result_folder)
         result_files2=[]
@@ -788,7 +783,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
         roicoords_files = os.listdir(roicoords_folder)
         roicoords_files2=[]
         for file in roicoords_files:
-            if file.endswith('.txt'):
+            if file.endswith('.txt') and not file.endswith('_RoiAttr.txt') and not file.endswith('_Results.txt'):
                 roicoords_files2.append(file)
 
         roiattr_files = os.listdir(roiattr_folder)
@@ -823,10 +818,12 @@ class AnalysisDialog(Ui_Dialog_analysis):
             a = str(tmp4[0])
             b = str(tmp4[1])
 
-        if res_b:
+        if roi_b:
             for file in roicoords_files2:
+                print file
                 tag=file[:file.find('.txt')]
-                filepath_w = roicoords_folder+'/results/'+file
+                tag2=file[:file.find('_RoiCoords.txt')]
+                filepath_w = file
                 storm_image = images.StormImage(file)
                 storm_image.coords_cols = (self.main_window.storm_settings.storm_config_fileheader_x,\
                                            self.main_window.storm_settings.storm_config_fileheader_y,\
@@ -841,7 +838,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
                 storm_image.parse()
                 roi_border= []
 
-                with open(roiattr_folder+'/'+tag+'_RoiAttr.txt') as attr_file:
+                with open(roiattr_folder+'/'+tag2+'_RoiAttr.txt') as attr_file:
 
                         line = attr_file.readline()
                         line = attr_file.readline()
@@ -851,7 +848,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
                             line = attr_file.readline()
                         roi_tag = line[:-1]
                         line = attr_file.readline()
-
+                        """
                         if roi_tag == "FreehandROI":
                             index = str(storm_image.file_path).find("freehandROI")
                             index2 = str(storm_image.file_path).find("RoiCoords")-1
@@ -864,13 +861,13 @@ class AnalysisDialog(Ui_Dialog_analysis):
                             index = str(storm_image.file_path).find("ellipseROI")
                             index2 = str(storm_image.file_path).find("RoiCoords")-1
                             roi_tag = str(storm_image.file_path)[index:index2]
-
+                        """
                         if line == "ROI confocal pixel number\n":
                             for i in range(0, 4):
                                 line = attr_file.readline()
 
                             conf_name = attr_file.readline()
-                            print conf_name
+
 
                             line = attr_file.readline().split()
 
@@ -878,13 +875,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
                                 line = attr_file.readline().split()
                                 if line:
                                     roi_border.append(line)
-
-
-
-
                 attr_file.close()
 
-                roi_tag=None
                 conf_name=None
                 x_offset=None
                 y_offset=None
@@ -957,12 +949,13 @@ class AnalysisDialog(Ui_Dialog_analysis):
                             )
                         values_simple.append(values)
 
-                self.write_results_common_to_file_batch(values_simple, file[:-4])
+                self.write_results_common_to_file_batch(values_simple, file[:-14])
         else:
-            print 'original STORM file analysis'
+            #print 'original STORM file analysis'
             for file in roicoords_files2:
+                print file
                 tag=file[:file.find('.txt')]
-                filepath_w = roicoords_folder+'/results/'+file
+                filepath_w = file
 
                 storm_image = images.StormImage(file)
                 storm_image.coords_cols = (self.main_window.storm_settings.storm_config_fileheader_x,\
@@ -976,7 +969,16 @@ class AnalysisDialog(Ui_Dialog_analysis):
                 )
                 storm_image.file_path = roicoords_folder+'/'+tag+'.txt'
                 storm_image.parse()
-                roi_tag= 'FULL STORM DATA'
+                if "freehandROI" in file:
+                    roi_tag= 'freehandROI'
+                elif "circleROI" in file:
+                    roi_tag= 'circleROI'
+                elif "ellipseROI" in file:
+                    roi_tag= 'ellipseROI'
+                elif "activeContourROI" in file:
+                    roi_tag= 'activeContourROI'
+                else:
+                    roi_tag= 'FULL STORM DATA'
                 values_simple = []
                 StormData_to_analyse = storm_image.StormData
                 dimensions = '3d' if self.main_window.storm_settings.storm_config_fileheader_z else '2d'
@@ -985,8 +987,6 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
                 for analysis in self.analyses:
                     if analysis.enabled:
-
-
                         values = analysis.run_batch(
                                 StormData_to_analyse,
                                 channels_num,
@@ -997,11 +997,12 @@ class AnalysisDialog(Ui_Dialog_analysis):
                                 "",
                                 "",
                                 "",
-
                         )
                         values_simple.append(values)
-
-                self.write_results_common_to_file_batch(values_simple, file[:-4])
+                if "RoiCoords" in file:
+                    self.write_results_common_to_file_batch(values_simple, file[:-14])
+                else:
+                    self.write_results_common_to_file_batch(values_simple, file[:-4])
 
         if self.main_window.viewer.current_confocal_image is not None and conf_b:
             tmp.parse(self.main_window.confocal_settings.confocal_config_calibration_px, self.main_window)
@@ -1022,19 +1023,9 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
                     ]
             self.main_window.viewer.display.ConfChannelToShow = tmp5
-
-
-
-
         values_simple = []
-
         StormData_to_analyse = storm_image.StormData
         StormData_to_analyse = self.main_window.storm_settings.filter_storm_data(StormData_to_analyse)
-
-
-
-
-
         print "Batch analysis ready"
 
     def run_analyses(self):
@@ -1114,9 +1105,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
         f.close()
 
     def write_results_common_to_file_batch(self, computed_values_simple, filename):
-        if not os.path.exists(self.lineEdit_analysis_roicoords_name.text()+'/results'):
-            os.makedirs(str(self.lineEdit_analysis_roicoords_name.text())+'/results')
-        filepath = self.lineEdit_analysis_roicoords_name.text()+'/results/'+filename+ '.txt'
+        #filepath = self.lineEdit_analysis_roicoords_name.text()+'/results/'+filename+ '_Results.txt'
+        filepath = self.main_window.working_directory+'/'+filename+ '_Results.txt'
 
         firstline = ''
         secondline = ''

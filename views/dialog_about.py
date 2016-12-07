@@ -58,7 +58,7 @@ class Ui_Dialog_about(object):
 
     def retranslateUi(self, Dialog_about):
         Dialog_about.setWindowTitle(_translate("Dialog_about", "About VividSTORM", None))
-        self.plainTextEdit.setPlainText(_translate("Dialog_about", "VividSTORM version 1.4\n"
+        self.plainTextEdit.setPlainText(_translate("Dialog_about", "VividSTORM version 1.5\n"
 "\n"
 "Copyright © 2015 László Barna, Barna Dudok, Vivien Miczán, András Horváth and István Katona\n"
 "This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.\n"
