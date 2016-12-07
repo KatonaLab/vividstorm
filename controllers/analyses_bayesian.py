@@ -294,7 +294,7 @@ def Kclust(self,pts, xlim, ylim, rseq, thseq,sds=0, psd=0, minsd=0, maxsd=0, use
 
                     else:
                         if len(svector)==0:
-                            svector.append=[r,th,s,0,A,B,C]
+                            svector=[r,th,s,0,A,B,C]
                         elif s>svector[2]:
                             svector = [r, th, s, lab, A, B, cl_index,Z,C]
 

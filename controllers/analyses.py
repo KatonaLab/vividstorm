@@ -2610,6 +2610,7 @@ class BayesianClusteringAnalysis(Analysis):
             """
 
             ok = True
+            ok2=True
             try:
                 #a = svector[ind][3].membership
                 a = svector[3].membership
@@ -2726,18 +2727,25 @@ class BayesianClusteringAnalysis(Analysis):
                 index_cl=numpy.delete(index_cl0, avector)
 
                 if(len(vec)==0):
-                    ok=False;
+                    ok2=False;
                     print ("All points belong to the background")
+            else:
+                self.computed_values_simple.append([self.storm_channel_list[m] + '_cluster#_Bayesian', str(0)])
+                self.computed_values_simple.append([self.storm_channel_list[m] + '_mean_LP/cluster_Bayesian', str(0)])
 
-            if ok:
+            if ok and ok2:
+                self.computed_values_simple.append([self.storm_channel_list[m] + '_cluster#_Bayesian', str(clust_number)])
+
                 first=True
+                sum_LP_cl=0
                 for i in clustnums:
                     el = vec.count(i)
+                    sum_LP_cl+=el
                     #indexes = svector[ind][3][i]
                     indexes = svector[3][i]
                     elements = []
                     for j in indexes:
-                        elements.append([A0[j], B0[j], Z[j]])
+                        elements.append([A0[j], B0[j], Z0[j]])
                     hull3D_volume = 0
 
                     if len(elements) > 3:
@@ -2763,7 +2771,8 @@ class BayesianClusteringAnalysis(Analysis):
                     else:
                         self.computed_values_multiple += '\n'
                     first=False
-
+                mean_LP_cl=float(sum_LP_cl)/clust_number
+                self.computed_values_simple.append([self.storm_channel_list[m] + '_mean_LP/cluster_Bayesian', str(mean_LP_cl)])
 
 
 
@@ -2788,6 +2797,10 @@ class BayesianClusteringAnalysis(Analysis):
                 else:
                     ax1.scatter(A,B,zs=Z, zdir='z', s=scalefactor,
                                  c=numpy.asarray(colorlist), marker='D')
+            else:
+                if ok:
+                    self.computed_values_simple.append([self.storm_channel_list[m] + '_cluster#_Bayesian', str(0)])
+                    self.computed_values_simple.append([self.storm_channel_list[m] + '_mean_LP/cluster_Bayesian', str(0)])
         if self.display_plots == True:
 
 
