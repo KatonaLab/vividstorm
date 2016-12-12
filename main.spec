@@ -5,9 +5,9 @@ block_cipher = None
 
 a = Analysis(['main.py'],
              pathex=['C:\\Users\\Judit\\vividstorm-VividSTORM'],
-             binaries=None,
-             datas=None,
-             hiddenimports=['scipy.special._ufuncs_cxx'],
+             binaries=[],
+             datas=[],
+             hiddenimports=['scipy.special._ufuncs_cxx', 'texttable'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],

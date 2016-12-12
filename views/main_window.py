@@ -152,7 +152,7 @@ class Ui_MainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollArea_2.setObjectName(_fromUtf8("scrollArea_2"))
         self.scrollAreaWidgetContents_2 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 406, 92))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 280, 88))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -275,7 +275,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents_3 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_3.setGeometry(QtCore.QRect(0, 0, 389, 268))
+        self.scrollAreaWidgetContents_3.setGeometry(QtCore.QRect(0, 0, 213, 268))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -1185,7 +1185,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "VividSTORM 1.4", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "VividSTORM 1.5", None))
         self.groupBox_storm_top_controls.setTitle(_translate("MainWindow", "STORM images", None))
         self.pushButton_open_storm.setText(_translate("MainWindow", "Open files...", None))
         self.pushButton_close_all_storm.setText(_translate("MainWindow", "Close files", None))

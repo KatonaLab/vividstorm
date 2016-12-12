@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>VividSTORM 1.4</string>
+   <string>VividSTORM 1.5</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/main_resources.qrc">
@@ -257,8 +257,8 @@ QTabBar::tab:selected{
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>406</width>
-                   <height>92</height>
+                   <width>280</width>
+                   <height>88</height>
                   </rect>
                  </property>
                  <property name="sizePolicy">
@@ -519,7 +519,7 @@ QTabBar::tab:selected{
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>389</width>
+                   <width>213</width>
                    <height>268</height>
                   </rect>
                  </property>
