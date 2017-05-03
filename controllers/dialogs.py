@@ -1169,6 +1169,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
         firstline = ''
         secondline = ''
+        
         headers = []
         headers.append(['date_time', str(datetime.datetime.now()).split('.')[0]])
         headers.append(['version', version_num])
