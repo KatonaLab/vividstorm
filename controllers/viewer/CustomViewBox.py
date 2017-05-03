@@ -173,6 +173,10 @@ class CustomViewBox(pg.ViewBox):
         for r in DrawnElements:
             self.removeItem(r)
 
+    def deleteActiveContourROI3d(self, DrawnElements):
+        for r in DrawnElements:
+            self.removeItem(r)
+
     def deleteEllipseROI(self, roi):
         self.removeItem(roi)
 

@@ -180,6 +180,7 @@ class Viewer(object):
             num = str(self.main_window.storm_settings.get_roi_counter())
             active_contour_roi = ActiveContourRoi('activeContourROI_' + num)
             active_contour_roi.roi = roi
+
             self.main_window.storm_settings.add_roi(active_contour_roi)
         elif shape =='active_contour_3d':
             roi = self.display.createActiveContourROI_3d(new_roi)
@@ -195,8 +196,9 @@ class Viewer(object):
         active_contour_roi3d = ActiveContourRoi3d('activeContourROI3d_' + num)
         active_contour_roi3d.storm = storm_inside
         active_contour_roi3d.roi = new_roi
+        active_contour_roi3d.roi2 = self.display.createActiveContourROI_3d(new_roi)
         self.main_window.storm_settings.add_roi(active_contour_roi3d)
-
+        """
         QtPoints = []
         DrawnElements = []
         FirstTime = True
@@ -217,9 +219,8 @@ class Viewer(object):
         r1.setPen(pg.mkPen('w'))
         DrawnElements.append(r1)
         self.display.Viewbox.addItem(r1)
+        """
         #return [pg.QtGui.QGraphicsPolygonItem(QtGui.QPolygonF(QtPoints)), QtPoints, DrawnElements]
-
-
 
 
     def remove_roi(self, roi):
@@ -229,6 +230,8 @@ class Viewer(object):
             self.display.deleteFreehandROI(roi)
         elif type(roi).__name__ == 'ActiveContourRoi':
             self.display.deleteActiveContourROI(roi.roi)
+        elif type(roi).__name__ == 'ActiveContourRoi3d':
+            self.display.deleteActiveContourROI3d(roi.roi2)
         self.main_window.storm_settings.remove_roi(self.main_window.storm_roi_list.currentRow())
 
     def change_drag_mode(self, is_conf):

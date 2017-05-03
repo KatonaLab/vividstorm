@@ -383,13 +383,9 @@ class StormDisplay(object):
 
     def createActiveContourROI_3d(self, PointList):
         # PointList coordinates of point as x,y. Ex: [[0,0], [5,4], [3,2] ....]
-        print "PL"
 
         [edgecoords, outroi] = self.GetEdgeCoords(PointList[7])
         xy_pointlist = self.matrix_order(edgecoords)
-
-        print xy_pointlist
-
         QtPoints = []
         DrawnElements = []
         FirstTime = True
@@ -441,15 +437,13 @@ class StormDisplay(object):
         # this parameter is the third return value of the createActiveContourROI function
         self.Viewbox.deleteActiveContourROI(roi[2])
 
+    def deleteActiveContourROI3d(self, roi):
+        # this parameter is the third return value of the createActiveContourROI function
+        self.Viewbox.deleteActiveContourROI3d(roi[2])
+
     def filterROIPoints(self, roi,roitype,channels):
         if roitype=='Activecontour':
             PolygonItem = roi[0]
-            print "test"
-            print roi
-            print roi.type()
-            print roi[0]
-            print roi[0].type
-            print roi[0].shape
             roiShape = PolygonItem.shape()
         elif roitype=='Freehand':
             roiShape = roi.shape()

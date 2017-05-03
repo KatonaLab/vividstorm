@@ -268,12 +268,13 @@ class ConfocalImage(MicroscopeImage):
             #set the z channel to the middle of the stacks
             NumOfZSlices=0
             # more Zchannels and color channels
-            if len(self.ConfocalData.shape) > 3:
+            if len(self.ConfocalData.shape) > 2 and self.ConfocalMetaData['ChannelNum'] > 1:
                     NumOfZSlices=self.ConfocalData.shape[0]           
             elif len(self.ConfocalData.shape) > 2 and self.ConfocalMetaData['ChannelNum'] == 1:
                     #z channels only
                     NumOfZSlices=self.ConfocalData.shape[0]       
-            elif len(self.ConfocalData.shape) > 2 and self.ConfocalMetaData['ChannelNum'] > 1:
+            elif len(self.ConfocalData.shape) > 1 and self.ConfocalMetaData['ChannelNum'] > 1:
+                    print self.ConfocalData.shape, self.ConfocalMetaData
                     #color channels only
                     NumOfZSlices=1
             else:
@@ -285,6 +286,7 @@ class ConfocalImage(MicroscopeImage):
                     if obj_name=='spinBox_confocal_display_appear_zposition':
                        spin_box.setValue(round(float(NumOfZSlices-1)/2.0)+1)
                 main_window.viewer.display.ConfocalZNum=round(float(NumOfZSlices-1)/2.0)
+
 
 
     def set_calibration(self, px):

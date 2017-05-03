@@ -41,7 +41,7 @@ QScrollArea{
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-339</y>
         <width>974</width>
         <height>1298</height>
        </rect>
@@ -435,14 +435,14 @@ QScrollArea{
              <bool>false</bool>
             </property>
             <layout class="QGridLayout" name="gridLayout_10">
-             <item row="0" column="0">
+             <item row="0" column="0" rowspan="2">
               <widget class="QLabel" name="label_analysis_bayesian_rseqminlabel">
                <property name="text">
                 <string>Rsequence min</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="1" colspan="2">
+             <item row="0" column="1" rowspan="2" colspan="2">
               <widget class="QSpinBox" name="spinBox_analysis_bayesian_rseqmin">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -461,27 +461,14 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="0" column="3" rowspan="2">
+             <item row="0" column="3" rowspan="3" colspan="2">
               <widget class="Line" name="line_4">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
               </widget>
              </item>
-             <item row="0" column="4" colspan="2">
-              <widget class="QLabel" name="label_analysis_bayesian_rseqmaxlabel">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Rsequence max</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="6">
+             <item row="0" column="6" rowspan="2">
               <widget class="QSpinBox" name="spinBox_analysis_bayesian_rseqmax">
                <property name="minimum">
                 <number>10</number>
@@ -494,21 +481,21 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="0" column="7" rowspan="2">
+             <item row="0" column="7" rowspan="3">
               <widget class="Line" name="line_5">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
               </widget>
              </item>
-             <item row="0" column="8">
+             <item row="0" column="8" rowspan="2">
               <widget class="QLabel" name="label_analysis_bayesian_rseqdifflabel">
                <property name="text">
                 <string>Rsequence diff</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="9">
+             <item row="0" column="9" rowspan="2">
               <widget class="QSpinBox" name="spinBox_analysis_bayesian_rseqdiff">
                <property name="minimum">
                 <number>1</number>
@@ -521,21 +508,21 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="0" column="10" rowspan="2">
+             <item row="0" column="10" rowspan="3">
               <widget class="Line" name="line_8">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
               </widget>
              </item>
-             <item row="0" column="11">
+             <item row="0" column="11" rowspan="2">
               <widget class="QLabel" name="label_analysis_bayesian_alphalabel">
                <property name="text">
                 <string>Alpha</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="12">
+             <item row="0" column="12" rowspan="2">
               <widget class="QSpinBox" name="spinBox_analysis_bayesian_alpha">
                <property name="maximum">
                 <number>100000</number>
@@ -548,14 +535,14 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="0" column="13" rowspan="2">
+             <item row="0" column="13" rowspan="3">
               <widget class="Line" name="line_9">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
               </widget>
              </item>
-             <item row="0" column="14">
+             <item row="0" column="14" rowspan="2">
               <widget class="QCheckBox" name="checkBox_analysis_bayesian_save_all">
                <property name="layoutDirection">
                 <enum>Qt::RightToLeft</enum>
@@ -565,14 +552,27 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="1" column="0">
+             <item row="1" column="4" colspan="2">
+              <widget class="QLabel" name="label_analysis_bayesian_rseqmaxlabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Rsequence max</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
               <widget class="QLabel" name="label_analysis_bayesian_thseqminlabel">
                <property name="text">
                 <string>Thsequence min</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="1" colspan="2">
+             <item row="2" column="1" colspan="2">
               <widget class="QSpinBox" name="spinBox_analysis_bayesian_thseqmin">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -591,14 +591,14 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="1" column="4" colspan="2">
+             <item row="2" column="4" colspan="2">
               <widget class="QLabel" name="label_analysis_bayesian_thseqmaxlabel">
                <property name="text">
                 <string>Thsequence max</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="6">
+             <item row="2" column="6">
               <widget class="QSpinBox" name="spinBox_analysis_bayesian_thseqmax">
                <property name="minimum">
                 <number>5</number>
@@ -611,14 +611,14 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="1" column="8">
+             <item row="2" column="8">
               <widget class="QLabel" name="label_analysis_bayesian_thseqdifflabel">
                <property name="text">
                 <string>Thsequence diff</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="9">
+             <item row="2" column="9">
               <widget class="QSpinBox" name="spinBox_analysis_bayesian_thseqdiff">
                <property name="minimum">
                 <number>5</number>
@@ -631,14 +631,14 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="1" column="11">
+             <item row="2" column="11">
               <widget class="QLabel" name="label_analysis_bayesian_pbackgroundlabel">
                <property name="text">
                 <string>Pbackground</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="12">
+             <item row="2" column="12">
               <widget class="QDoubleSpinBox" name="doubleSpinBox_analysis_bayesian_pbackground">
                <property name="maximum">
                 <double>1.000000000000000</double>
@@ -651,7 +651,17 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="2" column="0" colspan="2">
+             <item row="2" column="14">
+              <widget class="QCheckBox" name="checkBox_analysis_bayesian_export_pdb">
+               <property name="layoutDirection">
+                <enum>Qt::RightToLeft</enum>
+               </property>
+               <property name="text">
+                <string>Export in .pdb</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="2">
               <widget class="QCheckBox" name="checkBox_analysis_bayesian_usehistogram">
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
@@ -664,7 +674,7 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="2" column="2" colspan="3">
+             <item row="3" column="2" colspan="3">
               <widget class="QPushButton" name="pushButton_analysis_bayesian_choose_file">
                <property name="enabled">
                 <bool>true</bool>
@@ -683,7 +693,7 @@ QScrollArea{
                </property>
               </widget>
              </item>
-             <item row="2" column="5" colspan="5">
+             <item row="3" column="5" colspan="4">
               <widget class="QLineEdit" name="lineEdit_analysis_bayesian_histogramlinedit">
                <property name="enabled">
                 <bool>false</bool>

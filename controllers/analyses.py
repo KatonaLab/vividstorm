@@ -1163,7 +1163,7 @@ class DBScanAnalysis(Analysis):
                     if clusters[i][3] == 0:  # Not visited jet
                         neig = self.Region_Query(clusters[i][:3], self.analysis_dbscan_eps, coords)
 
-                        if len(neig) < self.analysis_dbscan_minn:
+                        if len(neig) < self.analysis_dbscan_minn-1:
                             clusters[i][3:] = [1, 0]  # Visited and noise
                         else:
                             clust_number = clust_number + 1
@@ -1177,7 +1177,7 @@ class DBScanAnalysis(Analysis):
                                     clusters[neig[k]][3] = 1  # mark P' as visited
                                     neig2 = self.Region_Query(clusters[neig[k]][:3], self.analysis_dbscan_eps,
                                                               coords)  # Neighbors of P'
-                                    if len(neig2) >= self.analysis_dbscan_minn:
+                                    if len(neig2) >= self.analysis_dbscan_minn-1:
                                         neig = neig + neig2  #NeighborPts joined with NeighborPts'
                                         neig_numb = len(neig)
                                     if clusters[neig[k]][4] == 0:  # if P' is not yet member of any cluster
@@ -2493,6 +2493,8 @@ class BayesianClusteringAnalysis(Analysis):
 
     def __init__(self, *args, **kwargs):
         super(BayesianClusteringAnalysis, self).__init__(*args, **kwargs)
+        self.computed_values_export = []
+        self.output_file_export_extension = 'pdb'
 
     Kclust = analyses_bayesian.Kclust
     minus = analyses_bayesian.minus
@@ -2507,6 +2509,37 @@ class BayesianClusteringAnalysis(Analysis):
     mcgaussprec = analyses_bayesian.mcgaussprec
     plabel = analyses_bayesian.plabel
     scorewprec = analyses_bayesian.scorewprec
+
+    def PDB_Print_beta(self, coords, atom_type, chain_id, start_number):
+        k = start_number
+        pdb_format = []
+        for coo in coords:
+            # if coo[4] == 0:
+            # atom_type = ' O'
+            #chain_id = 'A'
+            #else:
+            #atom_type = ' H'
+            #chain_id = 'B'
+
+            x = int(float(coo[0]))
+            y = int(float(coo[1]))
+            z = int(float(coo[2]))
+            line = 'ATOM      1   B  CB1 X   1                                                                                                                           '
+            a = list(line)
+            a[14:16] = atom_type
+            a[21] = chain_id
+            a[17:20] = 'LOC'
+            a[32:len(str(x))] = str(x)
+            a[40:len(str(y))] = str(y)
+            a[47:len(str(z))] = str(z)
+            a[11 - len(str(k)):11] = str(k)
+            a[26 - len(str(k)):26] = str(k)  # resid
+            a[60:60 + len(str(coo[3] * 10))] = str(coo[3] * 10)  # Beta Factor
+            k = k + 1
+            pdb_format.append(string.join(a, ''))
+
+        return (pdb_format)
+
 
     def compute(self, points):
 
@@ -2530,6 +2563,7 @@ class BayesianClusteringAnalysis(Analysis):
         visible_channel_nr = numpy.asarray(channel_nr)[0]
 
         for m in visible_channel_nr:
+            clusters_pdb=[]
             if len(points[m]) > 0:
                 coords = numpy.empty((len(points[m]), 3), dtype=numpy.int)
                 sdvalues = numpy.empty((len(points[m]), 1), dtype=numpy.float)
@@ -2726,6 +2760,9 @@ class BayesianClusteringAnalysis(Analysis):
                 Z= numpy.delete(Z0, avector)
                 index_cl=numpy.delete(index_cl0, avector)
 
+                cl_num=1
+
+
                 if(len(vec)==0):
                     ok2=False;
                     print ("All points belong to the background")
@@ -2744,9 +2781,16 @@ class BayesianClusteringAnalysis(Analysis):
                     #indexes = svector[ind][3][i]
                     indexes = svector[3][i]
                     elements = []
+                    if self.analysis_bayesian_export_pdb == True and len(indexes)>1:
+                        for j in indexes:
+                            clusters_pdb.append([A0[j],B0[j],Z0[j],cl_num])
+                        cl_num+=1
+
+
                     for j in indexes:
                         elements.append([A0[j], B0[j], Z0[j]])
                     hull3D_volume = 0
+
 
                     if len(elements) > 3:
                         hull3D = scipy.spatial.ConvexHull(elements, incremental=False, qhull_options=None)
@@ -2779,6 +2823,24 @@ class BayesianClusteringAnalysis(Analysis):
                 #print svector[ind][0]
                 #print svector[ind][1]
                 colorlist = numpy.ones((len(vec), 3))
+
+                if self.analysis_bayesian_export_pdb ==True:
+                    clusters_pdb2 = [clusters_pdb[i][0:3] for i in range(len(clusters_pdb))]
+                    clusters_pdb2 = set(tuple(row) for row in clusters_pdb2)
+                    for point in coords:
+
+                        if not tuple(point) in clusters_pdb2:
+                            clusters_pdb.append([point[0],point[1],point[2],0])
+
+                    if m == 0:
+                        self.computed_values_export += self.PDB_Print_beta(clusters_pdb, ' C', 'A', 1)
+                    elif m == 1:
+                        self.computed_values_export += self.PDB_Print_beta(clusters_pdb, ' N', 'A', 1)
+                    elif m == 2:
+                        self.computed_values_export += self.PDB_Print_beta(clusters_pdb, ' P', 'A', 1)
+                    else:
+                        self.computed_values_export += self.PDB_Print_beta(clusters_pdb, ' S', 'A', 1)
+
 
                 for s in range(clust_number):
                     inds = numpy.where(numpy.asarray(vec) == s + 1)

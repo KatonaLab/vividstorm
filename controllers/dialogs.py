@@ -318,24 +318,31 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
         r = numpy.int(self.roi.roi.size()[0] / zoom / 2)
         numpy.set_printoptions(threshold=numpy.nan)
         if not dim_2:
+            visualization = True
 
             channel_storm = self.main_window.viewer.display.StormChannelVisible.index(True)
             subarray = []
             numpy.set_printoptions(threshold=numpy.nan)
             #print self.confocal_image.ConfocalData[0][0][0].dtype
+
             if len(self.main_window.viewer.display.ConfChannelToShow) == 1:
+
                 subarray = self.confocal_image.ConfocalData
+
             else:
+                print self.confocal_image.ConfocalData.shape
                 for i in range(len(self.confocal_image.ConfocalData)):
                     subarray.append(self.confocal_image.ConfocalData[len(self.confocal_image.ConfocalData)-i-1][channel])
+
 
             img = numpy.array(subarray)
             self.formWidget.window().close()
 
             macwe = morphsnakes.MorphACWE(img, smoothing=mu, lambda1=lambda1, lambda2=lambda2)
+            print img.shape
             macwe.levelset = morphsnakes.circle_levelset(img.shape, (self.z_position,position[0],position[1]), r)
             acroi=morphsnakes.evolve_visual3d(macwe, num_iters=iteration)
-            if dilation_nr > 0:
+            if dilation_nr != 0:
                 acroi = scipy.ndimage.morphology.binary_dilation(acroi, iterations=dilation_nr)
 
             [edgecoords_z_pos, outroi] = self.GetEdgeCoords(acroi[self.z_position])
@@ -343,159 +350,199 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
 
             edgecoords_3d = self.GetEdgeCoords_3d(acroi)
 
-            inside_pixels=[]
-            for i in range(len(acroi)):
-                for j in range(len(acroi[0])):
-                    for k in range(len(acroi[0][0])):
-                        if acroi[i][j][k]==1:
-                            inside_pixels.append([i, j, k])
+            testroi = numpy.where(acroi == 1)
+            tr2 = numpy.asarray(testroi)
+            tr3 = tr2.transpose()
+            inside_pixels = numpy.ndarray.tolist(tr3)
 
-            for i in range(len(edgecoords_3d)):
-                inside_pixels.remove(edgecoords_3d[i])
-
+            #inside_pixels = [x for x in inside_pixels if x not in edgecoords_3d]
+            print self.viewer.display.ConfocalMetaData['SizeX']
 
             for i in range(len(inside_pixels)):
-                inside_pixels[i] =(inside_pixels[i][2] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeX'] + conf_offset[1]+self.viewer.display.ConfocalMetaData['SizeX']/2,
-                                       inside_pixels[i][1] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeY'] + conf_offset[0]+self.viewer.display.ConfocalMetaData['SizeY']/2,
-                                          inside_pixels[i][0] * 1000.0 * self.viewer.display.ConfocalMetaData['SizeZ']-1050)
+                inside_pixels[i] =(int(inside_pixels[i][2] * 1000 * self.viewer.display.ConfocalMetaData['SizeX'] + conf_offset[1]+self.viewer.display.ConfocalMetaData['SizeX']*1000/2),
+                                    int(inside_pixels[i][1] * 1000 * self.viewer.display.ConfocalMetaData['SizeY'] + conf_offset[0]+self.viewer.display.ConfocalMetaData['SizeY']*1000/2),
+                                    int(inside_pixels[i][0] * 1000 * self.viewer.display.ConfocalMetaData['SizeZ']-1050))
 
             from math import sqrt,pow
             sx=self.viewer.display.ConfocalMetaData['SizeX']*1000/2
             sy=self.viewer.display.ConfocalMetaData['SizeY']*1000/2
             sz=self.viewer.display.ConfocalMetaData['SizeZ']*1000/2
-            atlo= sqrt(pow(sx,2)+pow(sy*2,2))
-            mind=sqrt(pow(atlo,2)+pow(sz*2,2))
-            mind=sqrt(pow(sx*2,2)+pow(sz*2,2))
+            atlo= sqrt(pow(sx,2)+pow(sy,2))
+            mind=sqrt(pow(atlo,2)+pow(sz,2))
+
+            #mind=sqrt(pow(sx*2,2)+pow(sz*2,2))
 
             from scipy.spatial import distance
             inside_roi=[]
+            """
+            kd_tree = scipy.spatial.cKDTree(inside_pixels)
 
             for i in range(len(self.StormData_to_analyse[channel_storm])):
-                #self.StormData_to_analyse[channel_storm][i][3] = self.StormData_to_analyse[channel_storm][i][3]
-                for j in range(len(inside_pixels)):
+                if kd_tree.query(numpy.array([self.StormData_to_analyse[channel_storm][i][0],self.StormData_to_analyse[channel_storm][i][1],self.StormData_to_analyse[channel_storm][i][3]]))[0] < mind:
+                    inside_roi.append(numpy.array(self.StormData_to_analyse[channel_storm][i]))
 
-                    if distance.euclidean(numpy.array([self.StormData_to_analyse[channel_storm][i][0],self.StormData_to_analyse[channel_storm][i][1],self.StormData_to_analyse[channel_storm][i][3]]),inside_pixels[j]) <= mind:
-                        inside_roi.append(numpy.array(self.StormData_to_analyse[channel_storm][i]))
-                        break
+            """
+            inside_pixels2=numpy.array(inside_pixels)
+            inside_pixels=inside_pixels2
+            print "start"
+            dist=[]
+            x_half= self.viewer.display.ConfocalMetaData['SizeX']*1000/2
+            y_half= self.viewer.display.ConfocalMetaData['SizeY']*1000/2
+            z_half= self.viewer.display.ConfocalMetaData['SizeZ']*1000/2
+
+            for i in range(len(self.StormData_to_analyse[channel_storm])):
+                for j in range(len(inside_pixels)):
+                    if self.StormData_to_analyse[channel_storm][i][0] > inside_pixels[j][0]-x_half and self.StormData_to_analyse[channel_storm][i][0] < inside_pixels[j][0]+x_half:
+                        if self.StormData_to_analyse[channel_storm][i][1] > inside_pixels[j][1]-y_half and self.StormData_to_analyse[channel_storm][i][1] < inside_pixels[j][1]+y_half:
+                            if self.StormData_to_analyse[channel_storm][i][2] > inside_pixels[j][2]-z_half and self.StormData_to_analyse[channel_storm][i][2] < inside_pixels[j][2]+z_half:
+                                inside_roi.append(numpy.array(self.StormData_to_analyse[channel_storm][i]))
+                                dist.append((int(self.StormData_to_analyse[channel_storm][i][0])-inside_pixels[j][0]))
+
+                                dist.append((int(self.StormData_to_analyse[channel_storm][i][1])-inside_pixels[j][1]))
+                                dist.append((int(self.StormData_to_analyse[channel_storm][i][2])-inside_pixels[j][2]))
+                                break
+            print "max"
+            print max(dist)
             inside_roi_storm = numpy.array(inside_roi)
 
-            #storm->konfokális
-            xm=position[1]-r-5
-            ym=position[0]-r-5
+            if visualization:
+                #storm->konfokális
+                xm=max(position[1]-r-5,0)
+                ym=max(position[0]-r-5,0)
 
-            for i in range(len(inside_roi)):
-                x1 = int((float(inside_roi[i][0]-conf_offset[1])/self.viewer.display.ConfocalMetaData['SizeX']/1000-xm)*5)
-                y1 = int((float(inside_roi[i][1]-conf_offset[0])/self.viewer.display.ConfocalMetaData['SizeY']/1000-ym)*5)
-                z1 = int((float(inside_roi[i][3]+150*self.z_position+self.viewer.display.ConfocalMetaData['SizeZ']*1000/2)/self.viewer.display.ConfocalMetaData['SizeZ']/1000)*10)
-                inside_roi[i]=numpy.array([x1,y1,z1])
-
-            subarray2=[]
-            for i in range(len(img)):
-                sub1=[]
-                for j in range(position[0]-r-5,position[0]+r+5,1):
-                    sub2=[]
-                    for k in range(position[1]-r-5,position[1]+r+5,1):
-                        sub2.append(img[i][j][k])
-                    sub1.append(sub2)
-                subarray2.append(sub1)
-            subarray2=numpy.array(subarray2)
-
-            max_pr_xy = numpy.amax(subarray2, axis=0)
-            max_pr_xz = numpy.amax(subarray2, axis=1)
-            max_pr_yz = numpy.amax(subarray2, axis=2).transpose()
+                for i in range(len(inside_roi)):
+                    x1 = int((float(inside_roi[i][0]-conf_offset[1])/self.viewer.display.ConfocalMetaData['SizeX']/1000-xm)*5)
+                    y1 = int((float(inside_roi[i][1]-conf_offset[0])/self.viewer.display.ConfocalMetaData['SizeY']/1000-ym)*5)
+                    z1 = int((float(inside_roi[i][3]+150*self.z_position+self.viewer.display.ConfocalMetaData['SizeZ']*1000/2)/self.viewer.display.ConfocalMetaData['SizeZ']/1000)*10)
+                    inside_roi[i]=numpy.array([x1,y1,z1])
+                for i in range(len(inside_pixels)):
+                    x1 = int((float(inside_pixels[i][0]-conf_offset[1])/self.viewer.display.ConfocalMetaData['SizeX']/1000-xm)*5)
+                    y1 = int((float(inside_pixels[i][1]-conf_offset[0])/self.viewer.display.ConfocalMetaData['SizeY']/1000-ym)*5)
+                    z1 = int((float(inside_pixels[i][2]+150*self.z_position+self.viewer.display.ConfocalMetaData['SizeZ']*1000/2)/self.viewer.display.ConfocalMetaData['SizeZ']/1000)*10)
+                    inside_pixels[i]=numpy.array([int(round(x1)),int(round(y1)),int(round(z1))])
+                print type(inside_pixels[0][0])
+                print inside_pixels[0][0]
 
 
-            [xy_roi_full, outroi] = self.GetEdgeCoords(numpy.amax(acroi, axis=0))
-            xy_roi_edge = self.matrix_order_wo_conv(xy_roi_full)
-
-            pg1=[]
-            for i in range(len(xy_roi_edge)):
-                a= xy_roi_edge[i][0] - (position[0]-r-5)
-                b= xy_roi_edge[i][1] - (position[1]-r-5)
-                pg1.append((5*b+2,5*a+2))
-            pg1.append((pg1[0]))
-
-            #xz plane
-            [xz_roi_full, outroi] = self.GetEdgeCoords(numpy.amax(acroi, axis=1))
-            xz_roi_edge = self.matrix_order_wo_conv(xz_roi_full)
-
-            pg2=[]
-            for i in range(len(xz_roi_edge)):
-                b = xz_roi_edge[i][1] - (position[1]-r-5)
-                pg2.append((b, xz_roi_edge[i][0]))
-            pg2.append((pg2[0]))
-
-            #yz plane
-            max_roi_yz = numpy.amax(acroi, axis=2)
-            [yz_roi_full, outroi] = self.GetEdgeCoords(max_roi_yz)
-            yz_roi_edge = self.matrix_order_wo_conv(yz_roi_full)
-
-            pg3=[]
-            for i in range(len(yz_roi_edge)):
-                b= yz_roi_edge[i][1] - (position[0]-r-5)
-                pg3.append(( yz_roi_edge[i][0],b))
-            pg3.append((pg3[0]))
-
-            #RGB
-            xy=numpy.zeros((len(max_pr_xy),len(max_pr_xy[0]),3), dtype=numpy.uint8)
-            for i in range(len(max_pr_xy)):
-                for j in range(len(max_pr_xy[0])):
-                    xy[i,j,1]=max_pr_xy[i][j]
 
 
-            from PIL import ImageDraw
-            import PIL.Image
+                subarray2=[]
+                for i in range(len(img)):
+                    sub1=[]
+                    for j in range(position[0]-r-5,position[0]+r+6,1):
+                        sub2=[]
+                        for k in range(position[1]-r-5,position[1]+r+6,1):
+                            sub2.append(img[i][j][k])
+                        sub1.append(sub2)
+                    subarray2.append(sub1)
+                subarray2=numpy.array(subarray2)
 
-            slicesview=numpy.zeros((5*len(max_pr_xy[0])+5*len(max_pr_xz)*2,5*len(max_pr_xy)+2*5*len(max_pr_yz[0]),3),dtype=numpy.uint8)
-            slicesview[:,:,:]+=255
-
-            im=PIL.Image.fromarray(slicesview,'RGB')
-            im1=PIL.Image.fromarray(xy,'RGB').resize((5*len(xy),5*len(xy)),resample=PIL.Image.NEAREST)
-            from shapely.geometry import Polygon,Point
-            draw1=ImageDraw.Draw(im1)
-            poly1=Polygon(pg1)
-            for i in range(len(inside_roi)):
-                if poly1.contains(Point(inside_roi[i][0], inside_roi[i][1])):
-                    im1.putpixel((inside_roi[i][0], inside_roi[i][1]),(255,0,0))
-            draw1.line(pg1,width=2)
-            im.paste(im1,box=(0,0))
-            a=numpy.zeros((len(max_pr_xz),len(max_pr_xz[0]),3), dtype=numpy.uint8)
-            for i in range(len(max_pr_xz)):
-                for j in range(len(max_pr_xz[0])):
-                    a[i,j,1]=max_pr_xz[i][j]
-            b=numpy.zeros((len(max_pr_yz),len(max_pr_yz[0]),3), dtype=numpy.uint8)
-            for i in range(len(max_pr_yz)):
-                for j in range(len(max_pr_yz[0])):
-                    b[i,j,1]=max_pr_yz[i][j]
-            im2 = PIL.Image.fromarray(a,'RGB').resize((5*len(max_pr_xz[0]),5*2*len(max_pr_xz)),resample=PIL.Image.NEAREST)
-            draw2=ImageDraw.Draw(im2)
-            for i in range(len(pg2)):
-                pg2[i]=(5*pg2[i][0]+2, 5*2*pg2[i][1]+4)
-            pg2.append(pg2[0])
-            poly2=Polygon(pg2)
-            for i in range(len(inside_roi)):
-                if poly2.contains(Point(inside_roi[i][0], inside_roi[i][2])):
-                    im2.putpixel((inside_roi[i][0],inside_roi[i][2]),(255,0,0))
-            draw2.line(pg2,width=2)
-            im.paste(im2,box=(0,5*len(max_pr_xy)))
-            im3 = PIL.Image.fromarray(b,'RGB').resize((5*2*len(max_pr_yz[0]),5*len(max_pr_yz)),resample=PIL.Image.NEAREST)
-            draw3=ImageDraw.Draw(im3)
-
-            for i in range(len(pg3)):
-                pg3[i]=(5*2*pg3[i][0]+4,5*pg3[i][1]+2)
-            pg3.append(pg3[0])
-            poly3=Polygon(pg3)
+                max_pr_xy = numpy.amax(subarray2, axis=0)
+                max_pr_xz = numpy.amax(subarray2, axis=1)
+                max_pr_yz = numpy.amax(subarray2, axis=2).transpose()
 
 
-            for i in range(len(inside_roi)):
-                if poly3.contains(Point(inside_roi[i][2], inside_roi[i][1])):
-                    im3.putpixel((inside_roi[i][2],inside_roi[i][1]),(255,0,0))
+                [xy_roi_full, outroi] = self.GetEdgeCoords(numpy.amax(acroi, axis=0))
+                xy_roi_edge = self.matrix_order_wo_conv(xy_roi_full)
 
-            draw3.line(pg3,width=2)
-            im.paste(im3,box=(5*len(max_pr_xy),0))
-            plt.imshow(im,interpolation="nearest")
-            plt.axis("off")
-            plt.show()
+                pg1=[]
+                for i in range(len(xy_roi_edge)):
+                    a= xy_roi_edge[i][0] - (position[0]-r-5)
+                    b= xy_roi_edge[i][1] - (position[1]-r-5)
+                    pg1.append((5*b+2,5*a+2))
+                pg1.append((pg1[0]))
+
+                #xz plane
+                [xz_roi_full, outroi] = self.GetEdgeCoords(numpy.amax(acroi, axis=1))
+                xz_roi_edge = self.matrix_order_wo_conv(xz_roi_full)
+
+                pg2=[]
+                for i in range(len(xz_roi_edge)):
+                    b = xz_roi_edge[i][1] - (position[1]-r-5)
+                    pg2.append((b, xz_roi_edge[i][0]))
+                pg2.append((pg2[0]))
+
+                #yz plane
+                max_roi_yz = numpy.amax(acroi, axis=2)
+                [yz_roi_full, outroi] = self.GetEdgeCoords(max_roi_yz)
+                yz_roi_edge = self.matrix_order_wo_conv(yz_roi_full)
+
+                pg3=[]
+                for i in range(len(yz_roi_edge)):
+                    b= yz_roi_edge[i][1] - (position[0]-r-5)
+                    pg3.append(( yz_roi_edge[i][0],b))
+                pg3.append((pg3[0]))
+
+                #RGB
+                xy=numpy.zeros((len(max_pr_xy),len(max_pr_xy[0]),3), dtype=numpy.uint8)
+                for i in range(len(max_pr_xy)):
+                    for j in range(len(max_pr_xy[0])):
+                        xy[i,j,1]=max_pr_xy[i][j]
+
+
+                from PIL import ImageDraw
+                import PIL.Image
+
+                slicesview=numpy.zeros((5*len(max_pr_xy[0])+5*len(max_pr_xz)*2,5*len(max_pr_xy)+2*5*len(max_pr_yz[0]),3),dtype=numpy.uint8)
+                slicesview[:,:,:]+=255
+
+                im=PIL.Image.fromarray(slicesview,'RGB')
+                im1=PIL.Image.fromarray(xy,'RGB').resize((5*len(xy),5*len(xy)),resample=PIL.Image.NEAREST)
+                from shapely.geometry import Polygon,Point
+                draw1=ImageDraw.Draw(im1)
+                poly1=Polygon(pg1)
+                for i in range(len(inside_roi)):
+                    #if poly1.contains(Point(inside_roi[i][0], inside_roi[i][1])):
+                        im1.putpixel((inside_roi[i][0], inside_roi[i][1]),(255,0,0))
+                print type(inside_pixels[0][0])
+
+
+                draw1.line(pg1,width=2)
+                for i in range(len(inside_pixels)):
+                        im1.putpixel((inside_pixels[i][0], inside_pixels[i][1]),(0,0,255))
+                im.paste(im1,box=(0,0))
+                a=numpy.zeros((len(max_pr_xz),len(max_pr_xz[0]),3), dtype=numpy.uint8)
+                for i in range(len(max_pr_xz)):
+                    for j in range(len(max_pr_xz[0])):
+                        a[i,j,1]=max_pr_xz[i][j]
+                b=numpy.zeros((len(max_pr_yz),len(max_pr_yz[0]),3), dtype=numpy.uint8)
+                for i in range(len(max_pr_yz)):
+                    for j in range(len(max_pr_yz[0])):
+                        b[i,j,1]=max_pr_yz[i][j]
+                im2 = PIL.Image.fromarray(a,'RGB').resize((5*len(max_pr_xz[0]),5*2*len(max_pr_xz)),resample=PIL.Image.NEAREST)
+                draw2=ImageDraw.Draw(im2)
+                for i in range(len(pg2)):
+                    pg2[i]=(5*pg2[i][0]+2, 5*2*pg2[i][1]+4)
+                pg2.append(pg2[0])
+                poly2=Polygon(pg2)
+                for i in range(len(inside_roi)):
+                    #if poly2.contains(Point(inside_roi[i][0], inside_roi[i][2])):
+                        im2.putpixel((inside_roi[i][0],inside_roi[i][2]),(255,0,0))
+                draw2.line(pg2,width=2)
+                for i in range(len(inside_pixels)):
+                        im2.putpixel((inside_pixels[i][0], inside_pixels[i][2]),(0,0,255))
+                im.paste(im2,box=(0,5*len(max_pr_xy)))
+                im3 = PIL.Image.fromarray(b,'RGB').resize((5*2*len(max_pr_yz[0]),5*len(max_pr_yz)),resample=PIL.Image.NEAREST)
+                draw3=ImageDraw.Draw(im3)
+
+                for i in range(len(pg3)):
+                    pg3[i]=(5*2*pg3[i][0]+4,5*pg3[i][1]+2)
+                pg3.append(pg3[0])
+                poly3=Polygon(pg3)
+
+
+                for i in range(len(inside_roi)):
+                    #if poly3.contains(Point(inside_roi[i][2], inside_roi[i][1])):
+                        im3.putpixel((inside_roi[i][2],inside_roi[i][1]),(255,0,0))
+
+                draw3.line(pg3,width=2)
+                for i in range(len(inside_pixels)):
+                        im3.putpixel((inside_pixels[i][2], inside_pixels[i][1]),(0,0,255))
+                im.paste(im3,box=(5*len(max_pr_xy),0))
+                plt.imshow(im,interpolation="nearest")
+                plt.axis("off")
+                plt.show()
+
             self.viewer.remove_roi(self.roi)
             inside_roi3=[]
             for i in range(4):
@@ -755,8 +802,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
     def run_batch_analyses(self):
         print "Batch analyses"
 
-
         roicoords_folder = self.lineEdit_analysis_roicoords_name.text()
+
         result_folder = self.lineEdit_analysis_folder_name.text()
 
         roiattr_folder = self.lineEdit_analysis_roiattr_name.text()
@@ -770,12 +817,10 @@ class AnalysisDialog(Ui_Dialog_analysis):
         if confocal_folder == "":
             confocal_folder = roicoords_folder
 
-
-
         self.main_window.status_bar.showMessage('Running analyses, please wait...')
 
         result_files = os.listdir(result_folder)
-        result_files2=[]
+        result_files2 = []
         for file in result_files:
             if file.endswith('_Results.txt'):
                 result_files2.append(file)
@@ -820,6 +865,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
         if roi_b:
             for file in roicoords_files2:
+                self.roi_perimeter=""
+                self.roi_area=""
                 print file
                 tag=file[:file.find('.txt')]
                 tag2=file[:file.find('_RoiCoords.txt')]
@@ -876,6 +923,15 @@ class AnalysisDialog(Ui_Dialog_analysis):
                                 if line:
                                     roi_border.append(line)
                 attr_file.close()
+
+                try:
+                    with open(result_folder+'/'+tag2+'_Results.txt') as res_file:
+                        line_1 = res_file.readline().strip().split()
+                        line_2 = res_file.readline().strip().split()
+                        self.roi_perimeter = line_2[line_1.index("ROI_perimeter(um)")+1]
+                        self.roi_area = line_2[line_1.index("ROI_area(um^2)")+1]
+                except:
+                    print tag2, "- no roi perimeter, area"
 
                 conf_name=None
                 x_offset=None
@@ -949,10 +1005,12 @@ class AnalysisDialog(Ui_Dialog_analysis):
                             )
                         values_simple.append(values)
 
-                self.write_results_common_to_file_batch(values_simple, file[:-14])
+                self.write_results_common_to_file_batch(values_simple, file[:-14],self.roi_perimeter,self.roi_area)
         else:
             #print 'original STORM file analysis'
             for file in roicoords_files2:
+                self.roi_perimeter=""
+                self.roi_area=""
                 print file
                 tag=file[:file.find('.txt')]
                 filepath_w = file
@@ -1000,9 +1058,9 @@ class AnalysisDialog(Ui_Dialog_analysis):
                         )
                         values_simple.append(values)
                 if "RoiCoords" in file:
-                    self.write_results_common_to_file_batch(values_simple, file[:-14])
+                    self.write_results_common_to_file_batch(values_simple, file[:-14],self.roi_perimeter,self.roi_area)
                 else:
-                    self.write_results_common_to_file_batch(values_simple, file[:-4])
+                    self.write_results_common_to_file_batch(values_simple, file[:-4],self.roi_perimeter,self.roi_area)
 
         if self.main_window.viewer.current_confocal_image is not None and conf_b:
             tmp.parse(self.main_window.confocal_settings.confocal_config_calibration_px, self.main_window)
@@ -1104,7 +1162,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
         f.write(secondline[:-1]+ '\n')
         f.close()
 
-    def write_results_common_to_file_batch(self, computed_values_simple, filename):
+    def write_results_common_to_file_batch(self, computed_values_simple, filename,perimeter,area):
+        print "filename", filename
         #filepath = self.lineEdit_analysis_roicoords_name.text()+'/results/'+filename+ '_Results.txt'
         filepath = self.main_window.working_directory+'/'+filename+ '_Results.txt'
 
@@ -1114,6 +1173,9 @@ class AnalysisDialog(Ui_Dialog_analysis):
         headers.append(['date_time', str(datetime.datetime.now()).split('.')[0]])
         headers.append(['version', version_num])
         headers.append(['storm_file', filename])
+        if perimeter!="":
+            headers.append(['ROI_perimeter(um)',perimeter])
+            headers.append(['ROI_area(um^2)',area])
         #headers.append(['ROI_tag', self.roi_tag])
         for header in headers:
             firstline += header[0] + '\t'
