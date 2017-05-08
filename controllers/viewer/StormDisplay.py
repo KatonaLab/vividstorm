@@ -591,7 +591,7 @@ class StormDisplay(object):
   
 
     def areaOfEllipseROI(self, roi):
-        return math.pi * roi.size().x() * roi.size().y()
+        return math.pi * roi.size().x()/2 * roi.size().y()/2
 
     def lengthOfEllipseROI(self, roi):
         roiShape = roi.mapToParent(roi.shape())

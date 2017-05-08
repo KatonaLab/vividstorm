@@ -799,6 +799,30 @@ class AnalysisDialog(Ui_Dialog_analysis):
                         if analysis.name_prefix == setting_key:
                             analysis.enabled = widget.isChecked()
 
+    def areaOfActiveContourROI_2(self, roi):
+
+        RoiCorners = roi
+        n = len(RoiCorners)  # of corners
+        area = 0.0
+        for i in range(n):
+            j = (i + 1) % n
+            area += RoiCorners[i][0] * RoiCorners[j][1]
+            area -= RoiCorners[j][0] * RoiCorners[i][1]
+        area = abs(area) / 2.0 / 1000000.0
+        return area
+
+    def lengthOfActiveContourROI_2(self, roi):
+
+        RoiCorners = roi
+        n = len(RoiCorners)  # of corners
+        length = 0.0
+        for i in range(n):
+            j = (i + 1) % n
+            XDif = (RoiCorners[i][0] - RoiCorners[j][0])
+            YDif = (RoiCorners[i][1] - RoiCorners[j][1])
+            length += math.sqrt(XDif * XDif + YDif * YDif)
+        return length/1000.0
+
     def run_batch_analyses(self):
         print "Batch analyses"
 
@@ -883,8 +907,8 @@ class AnalysisDialog(Ui_Dialog_analysis):
                 )
                 storm_image.file_path = roicoords_folder+'/'+tag+'.txt'
                 storm_image.parse()
-                roi_border= []
-
+                roi_border_x= []
+                roi_border_y= []
                 with open(roiattr_folder+'/'+tag2+'_RoiAttr.txt') as attr_file:
 
                         line = attr_file.readline()
@@ -918,20 +942,27 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
                             line = attr_file.readline().split()
 
-                            while line:
-                                line = attr_file.readline().split()
-                                if line:
-                                    roi_border.append(line)
+                        while line:
+                            line = attr_file.readline().split()
+                            if line:
+                                roi_border_x.append(line[0])
+                                roi_border_y.append(line[1])
+                        roi_border_x = [float(i) for i in roi_border_x]
+                        roi_border_y = [float(i) for i in roi_border_y]
+                        roi_border= zip(roi_border_x,roi_border_y)
+                        try:
+                            print roi_tag
+                            self.roi_area = self.areaOfActiveContourROI_2(roi_border)
+                            self.roi_perimeter = self.lengthOfActiveContourROI_2(roi_border)
+                            print self.roi_perimeter
+                            print self.roi_area
+                        except:
+                            print tag2, "- no roi perimeter, area"
+
+
                 attr_file.close()
 
-                try:
-                    with open(result_folder+'/'+tag2+'_Results.txt') as res_file:
-                        line_1 = res_file.readline().strip().split()
-                        line_2 = res_file.readline().strip().split()
-                        self.roi_perimeter = line_2[line_1.index("ROI_perimeter(um)")+1]
-                        self.roi_area = line_2[line_1.index("ROI_area(um^2)")+1]
-                except:
-                    print tag2, "- no roi perimeter, area"
+
 
                 conf_name=None
                 x_offset=None
@@ -1169,14 +1200,14 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
         firstline = ''
         secondline = ''
-        
+
         headers = []
         headers.append(['date_time', str(datetime.datetime.now()).split('.')[0]])
         headers.append(['version', version_num])
         headers.append(['storm_file', filename])
         if perimeter!="":
-            headers.append(['ROI_perimeter(um)',perimeter])
-            headers.append(['ROI_area(um^2)',area])
+            headers.append(['ROI_perimeter(um)',str(perimeter)])
+            headers.append(['ROI_area(um^2)',str(area)])
         #headers.append(['ROI_tag', self.roi_tag])
         for header in headers:
             firstline += header[0] + '\t'
