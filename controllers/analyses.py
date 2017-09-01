@@ -7,7 +7,7 @@ Author: turbo
 
 """
 import os
-from util import RunnableComponent
+from .util import RunnableComponent
 import numpy
 import string
 import scipy
@@ -26,15 +26,16 @@ from scipy import ndimage
 from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph as pg
 import sys
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 import fnmatch
-import igraph
+import jgraph
 from sklearn.metrics.pairwise import pairwise_distances
-import analyses_bayesian
-import dialogs
+from . import analyses_bayesian
+from . import dialogs
 import warnings
-from thread import start_new_thread
-import images
+# TODO: use module 'threading'
+from _thread import start_new_thread
+from . import images
 
 
 class Analysis(RunnableComponent):
@@ -225,7 +226,7 @@ class Analysis(RunnableComponent):
             self.computed_values_multiple = ""
             return self.computed_values_simple
         else:
-            print str(type(self).__name__) + ' analysis requirements are not met!'
+            print(str(type(self).__name__) + ' analysis requirements are not met!')
             return None
 
     def run(self, points, channels_num, dimensions):
@@ -247,7 +248,7 @@ class Analysis(RunnableComponent):
 
             return self.computed_values_simple
         else:
-            print str(type(self).__name__) + ' analysis requirements are not met!'
+            print(str(type(self).__name__) + ' analysis requirements are not met!')
             return None
 
 # commonly used functions
@@ -352,7 +353,7 @@ class Analysis(RunnableComponent):
         close_points = []
         i = 0
         for pt in points_f[:]:
-            # print i, '/', len(points_f)
+            # print(i, '/', len(points_f))
             i = i + 1
             [cl_point, dist_fs, triang] = self.ClosestHullSurfPoint_2(hull, pt)
             close_points.append(list(pt) + cl_point + [dist_fs] + list(triang))
@@ -588,7 +589,7 @@ class Analysis(RunnableComponent):
                             next_edge_b.append(ee)
 
                 if len(next_edge_a) < 2 or len(next_edge_b) < 2:
-                    #print 'There is no neighbor edge'
+                    #print('There is no neighbor edge')
                     continue
 
                 #The two root
@@ -626,7 +627,7 @@ class Analysis(RunnableComponent):
                         # Stop finding root after 5000 trial
                         exxxit = exxxit + 1
                         if exxxit == 5000:
-                            # print 'missed side \n'
+                            # print('missed side \n')
                             root_a = [0, 0]
                             root_b = [0, 0]
                             break
@@ -661,7 +662,7 @@ class Analysis(RunnableComponent):
                                     ee_tmp.append(sorted(cb1_edges_cross[i][9:]))
 
                         if len(ee_tmp) > 1:
-                            # print 'bifurcation   at ' + str(i) + 'element'
+                            # print('bifurcation   at ' + str(i) + 'element')
                             break
 
                         ee = ee_tmp[0]
@@ -718,14 +719,14 @@ class Analysis(RunnableComponent):
                     min_root_length = full_root_b_length
                     min_root_trans = root_b_coord
 
-        # print min_root_length
+        # print(min_root_length)
         try:
             min_root_trans
         except NameError:
             min_root_trans = [[0, 0, 0], [0, 0, 0]]
 
         if min_root_trans == [[0, 0, 0], [0, 0, 0]]:
-            print 'Failed to calculate shortest dist'
+            print('Failed to calculate shortest dist')
         else:
             for i in range(len(min_root_trans)):
                 min_root_trans[i][0] = min_root_trans[i][0] + centr_cord[0]
@@ -785,11 +786,11 @@ class Analysis(RunnableComponent):
         return (random_points)
 
 def JoinResults(object):
-    print "join Result files"
+    print("join Result files")
     file_dialog = QtGui.QFileDialog()
     path = QtGui.QFileDialog.getExistingDirectory(file_dialog, 'Select working directory')
 
-    print path
+    print(path)
 
     key='*Results.txt'
     f='_All_Results_.txt'
@@ -801,7 +802,7 @@ def JoinResults(object):
 
     for df in os.listdir('.'):
         if fnmatch.fnmatch(df, key):
-            print df
+            print(df)
 
             ins = open(df, "r" )
 
@@ -819,15 +820,15 @@ def JoinResults(object):
             ins.close()
 
     f.close()
-    print "join ready"
+    print("join ready")
 
 def JoinROIs(object, workdir):
-    print "Join ROI output files"
+    print("Join ROI output files")
 
     file_dialog = QtGui.QFileDialog()
     path = str(QtGui.QFileDialog.getExistingDirectory(file_dialog, 'Select working directory', workdir))
 
-    print path
+    print(path)
 
     key='*RoiAttr.txt'
     fn='_All_Roi_.txt'
@@ -854,7 +855,7 @@ def JoinROIs(object, workdir):
 
 
 
-    print "join ready"
+    print("join ready")
 
 class NlpAnalysis(Analysis):
     def __init__(self, *args, **kwargs):
@@ -862,7 +863,7 @@ class NlpAnalysis(Analysis):
         self.computed_values_multiple = None
 
     def compute(self, points):
-        print 'Nlp_analysis'
+        print('Nlp_analysis')
 
         if self.roi_area is not None:
             RoiArea = self.roi_area
@@ -887,7 +888,7 @@ class NlpAnalysis(Analysis):
                 self.computed_values_simple.append([self.storm_channel_list[k] + '_NLP', str(0)])
 
 
-        print 'Nlp_analysis ready'
+        print('Nlp_analysis ready')
 
 
 class ConvexHullAnalysis(Analysis):
@@ -896,7 +897,7 @@ class ConvexHullAnalysis(Analysis):
         self.computed_values_multiple = None
 
     def compute(self, points):
-        print 'ConvexHull_Analysis'
+        print('ConvexHull_Analysis')
 
         # 2D matplotlib hull figure properties
         fig2Dhull = plt.figure(facecolor=(0, 0, 0), edgecolor=(0, 0, 0))
@@ -941,7 +942,7 @@ class ConvexHullAnalysis(Analysis):
 
                 # calculating 2D hull
                 if len(coords) < 4:
-                    print "not enough LPs to form a convex hull"
+                    print("not enough LPs to form a convex hull")
 
                 else:
                     hull2D = scipy.spatial.ConvexHull(coords[:, :2])
@@ -980,7 +981,7 @@ class ConvexHullAnalysis(Analysis):
                         axes2Dhull.plot(coords[simplex, 0], coords[simplex, 1], '-w')
 
                     if numpy.sum(coords[:, 2]) == 0:
-                        print "not 3D data"
+                        print("not 3D data")
 
                     else:
                         # calculating 3D hull
@@ -1020,7 +1021,7 @@ class ConvexHullAnalysis(Analysis):
 
 
             else:
-                print "Not enough points for Convex hull analysis"
+                print("Not enough points for Convex hull analysis")
 
         if self.display_plots == True:
             # set origin to upper left corner
@@ -1033,7 +1034,7 @@ class ConvexHullAnalysis(Analysis):
         else:
             plt.close("all")
 
-        print "ConvexHull_Analysis ready"
+        print("ConvexHull_Analysis ready")
 
 class QualityControlAnalysis(Analysis):
      def __init__(self, *args, **kwargs):
@@ -1041,7 +1042,7 @@ class QualityControlAnalysis(Analysis):
          self.computed_values_multiple = None
 
      def compute(self, points):
-         print 'QualityControlAnalysis'
+         print('QualityControlAnalysis')
          channel_nr= numpy.where(numpy.asarray(self.storm_channels_visible) == True)
          visible_channel_nr=numpy.asarray(channel_nr)[0]
 
@@ -1074,7 +1075,7 @@ class QualityControlAnalysis(Analysis):
                  self.computed_values_simple.append([self.storm_channel_list[k] + '_mean_localization_accuracy', str(0)])
                  self.computed_values_simple.append([self.storm_channel_list[k] + '_mean_neighbor_number_160nm',
                                                      str(0)])
-         print 'QualityControlAnalysis ready'
+         print('QualityControlAnalysis ready')
 
 class DBScanAnalysis(Analysis):
     def __init__(self, *args, **kwargs):
@@ -1121,7 +1122,7 @@ class DBScanAnalysis(Analysis):
         return (pdb_format)
 
     def compute(self, points):
-        print 'DBSCAN_analysis'
+        print('DBSCAN_analysis')
 
 
 
@@ -1269,7 +1270,7 @@ class DBScanAnalysis(Analysis):
                         self.computed_values_export += self.PDB_Print_beta(clusters, ' S', 'A', 1)
 
             else:
-                print 'not enough LPs for DBSCAN analysis' \
+                print('not enough LPs for DBSCAN analysis')
 
         if self.display_plots == True:
             # ylim=axes.get_ylim()
@@ -1292,12 +1293,12 @@ class DBScanAnalysis(Analysis):
 
                 plt.show()
             else:
-                print "not enough clustered points for visualization"
+                print("not enough clustered points for visualization")
 
         else:
             plt.close("all")
 
-        print 'DBSCAN_analysis ready'
+        print('DBSCAN_analysis ready')
 
 
 class InternalizationDrAnalysis(Analysis):
@@ -1307,7 +1308,7 @@ class InternalizationDrAnalysis(Analysis):
 
     def compute(self, points):
 
-        print "d/r analysis"
+        print("d/r analysis")
         dist_channel_nr = self.visible_storm_channel_names.index(
             self.analysis_internalization_dr_channel_distance)
 
@@ -1343,8 +1344,8 @@ class InternalizationDrAnalysis(Analysis):
                     self.analysis_internalization_dr_channel_distance) + '\t' + str(points_4_distances[c, 0]) + '\t' + str(
                     points_4_distances[c, 1]) + '\t' + str(points_4_distances[c, 2]) + '\t' + str(dist_from_cg[c]) + '\n'
         else:
-            print "not enough LPs for d/r analysis"
-        print "d/r analysis ready"
+            print("not enough LPs for d/r analysis")
+        print("d/r analysis ready")
 
 
 class InternalizationSurfaceAnalysis(Analysis):
@@ -1354,7 +1355,7 @@ class InternalizationSurfaceAnalysis(Analysis):
 
     def compute(self, points):
 
-        print "Internalization Analysis/surface"
+        print("Internalization Analysis/surface")
         hull_channel_nr = self.visible_storm_channel_names.index(
             self.analysis_internalization_surface_channel_convex)
         dist_channel_nr = self.visible_storm_channel_names.index(
@@ -1387,7 +1388,7 @@ class InternalizationSurfaceAnalysis(Analysis):
                 [qpoint, distance, tri] = self.ClosestHullSurfPoint_2(conv_hull, points_4_distances[s, :])
                 qpoint_vector.append(qpoint)
                 distance_vector.append(distance)
-                # print str(s) + '/' + str(len(points_4_distances))
+                # print(str(s) + '/' + str(len(points_4_distances)))
 
             # Generate small output file
             internalized_nr = numpy.asarray(numpy.where(numpy.asarray(distance_vector) > int_threshold)).size
@@ -1409,8 +1410,8 @@ class InternalizationSurfaceAnalysis(Analysis):
                     qpoint_vector[c][1]) + '\t' + str(qpoint_vector[c][2]) + '\t' + str(
                     round(distance_vector[c] / 1000, ndigits=3)) + '\n'
         else:
-            print 'not enough LPs for Surface Internalization Analysis'
-        print 'Internalization Analysis/surface ready'
+            print('not enough LPs for Surface Internalization Analysis')
+        print('Internalization Analysis/surface ready')
 
 
 class EuclideanDistanceWithinChannelAnalysis(Analysis):
@@ -1418,7 +1419,7 @@ class EuclideanDistanceWithinChannelAnalysis(Analysis):
         super(EuclideanDistanceWithinChannelAnalysis, self).__init__(*args, **kwargs)
 
     def compute(self, points):
-        print "EuclideanDistanceWithinChannelAnalysis"
+        print("EuclideanDistanceWithinChannelAnalysis")
 
         # Big output file header
         self.computed_values_multiple = 'storm_file\tROI_tag\tchannel_ID\tLP_ID\tmin_neighbor_distance(um)\n'
@@ -1447,8 +1448,8 @@ class EuclideanDistanceWithinChannelAnalysis(Analysis):
                     [self.storm_channel_list[k] + '_mean_NN_distance(um)', str(meanNN)])
                 self.computed_values_simple.append([self.storm_channel_list[k] + '_CV_NN_distance', str(varNN)])
             else:
-                print "not enough LPs for Euclidean Distance within channel analysis"
-        print "EuclideanDistanceWithinChannelAnalysis ready"
+                print("not enough LPs for Euclidean Distance within channel analysis")
+        print("EuclideanDistanceWithinChannelAnalysis ready")
 
 
 class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
@@ -1457,7 +1458,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
         self.requirements_channels_num_min = 1
 
     def compute(self, points):
-        print "EuclideanDistanceBetweenChannelAnalysis"
+        print("EuclideanDistanceBetweenChannelAnalysis")
 
 
         base_channel_nr = self.visible_storm_channel_names.index(
@@ -1485,10 +1486,10 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
                 pix_size=self.ConfocalMetaData['SizeX']*1000 #in nm
                 offset=[self.confocal_offset[1]/ConfocalSizeMultiplier, self.confocal_offset[0]/ConfocalSizeMultiplier]
 
-                print "data"
-                print pix_size
-                print offset
-                print ConfocalSizeMultiplier
+                print("data")
+                print(pix_size)
+                print(offset)
+                print(ConfocalSizeMultiplier)
 
                 base_coords = numpy.empty((len(points[base_channel_nr]), 3), dtype=numpy.float)
                 base_coords[:, 0] = (numpy.asarray(points[base_channel_nr])[:, 0])/pix_size-offset[0]
@@ -1582,7 +1583,7 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
 
                 else:
                     from_coords=[]
-                    print "no points in reference channel"
+                    print("no points in reference channel")
 
         else:
 
@@ -1670,8 +1671,8 @@ class EuclideanDistanceBetweenChannelsAnalysis(Analysis):
             self.computed_values_simple.append([
                 'CV_NN_distance_between', str(varNN)])
         else:
-            print "Not enough LPs for EuclideanDistanceBetweenChannelAnalysis"
-        print "EuclideanDistanceBetweenChannelAnalysis ready"
+            print("Not enough LPs for EuclideanDistanceBetweenChannelAnalysis")
+        print("EuclideanDistanceBetweenChannelAnalysis ready")
 
 
 class SurfaceDistanceBetweenChannelsAnalysis(Analysis):
@@ -1728,7 +1729,7 @@ class SurfaceDistanceBetweenChannelsAnalysis(Analysis):
 
 
     def compute(self, points):
-        print "SurfaceDistanceBetweenChannelAnalysis"
+        print("SurfaceDistanceBetweenChannelAnalysis")
 
         hull_channel_nr = self.visible_storm_channel_names.index(self.analysis_euclidean_surface_between_channel_convex)
         ref_channel_nr = self.visible_storm_channel_names.index(
@@ -1921,8 +1922,8 @@ class SurfaceDistanceBetweenChannelsAnalysis(Analysis):
                     root_start_atom = root_start_atom + len(all_roots[i])
                 self.computed_values_export = all_pdb
         else:
-            print "not enough LPs for SurfaceDistanceBetweenChannelAnalysis"
-        print "SurfaceDistanceBetweenChannelAnalysis ready"
+            print("not enough LPs for SurfaceDistanceBetweenChannelAnalysis")
+        print("SurfaceDistanceBetweenChannelAnalysis ready")
 
 
 class SurfaceDensityAnalysis(Analysis):
@@ -1931,7 +1932,7 @@ class SurfaceDensityAnalysis(Analysis):
         self.requirements_dimensions_num_list_any = ['3d']
 
     def compute(self, points):
-        print "SurfaceDensityAnalysis"
+        print("SurfaceDensityAnalysis")
 
         hull_channel_nr = self.visible_storm_channel_names.index(self.analysis_surface_density_channel_convex)
         dens_channel_nr = self.visible_storm_channel_names.index(self.analysis_surface_density_channel_density)
@@ -2046,8 +2047,8 @@ class SurfaceDensityAnalysis(Analysis):
             else:
                 plt.close("all")
         else:
-            print 'Not enough LPs for SurfaceDensityAnalysis'
-        print 'SurfaceDensityAnalysis ready'
+            print('Not enough LPs for SurfaceDensityAnalysis')
+        print('SurfaceDensityAnalysis ready')
 
 
 class SurfaceDensityDistributionAnalysis(Analysis):
@@ -2057,7 +2058,7 @@ class SurfaceDensityDistributionAnalysis(Analysis):
         self.requirements_dimensions_num_list_any = ['3d']
 
     def compute(self, points):
-        print "SurfaceDensityDistributionAnalysis"
+        print("SurfaceDensityDistributionAnalysis")
 
         hull_channel_nr = self.visible_storm_channel_names.index(
             self.analysis_surface_density_distribution_channel_convex)
@@ -2135,7 +2136,7 @@ class SurfaceDensityDistributionAnalysis(Analysis):
             all_distances = []
             all_roots = []
             for i in range(len(rand_sampling_point_on_hull)):
-                # print i, '/', len(rand_sampling_point_on_hull)
+                # print(i, '/', len(rand_sampling_point_on_hull))
                 A = rand_sampling_point_on_hull[i][:3]  #Points on reference hull (random density measure points)
                 B = rand_sampling_point_on_hull[i][3:6]  #Points on hull 4 distances (reference hull projection)
                 [min_dist_on_hull, min_dist_on_hull_root] = self.shortest_distance_on_hull_surface(hull, A, B)
@@ -2145,7 +2146,7 @@ class SurfaceDensityDistributionAnalysis(Analysis):
             #Calculate the density in the sampling points
             tree = scipy.spatial.cKDTree(points_4_density)
             for i in range(len(all_distances)):
-                # print i
+                # print(i)
                 volume = 4 / 3 * 3.141592 * eps ** 3
                 all_distances[i] = all_distances[i] + [
                     float(len(tree.query_ball_point(rand_sampling_point_on_hull[i][:3], eps)) / volume)]
@@ -2275,8 +2276,8 @@ class SurfaceDensityDistributionAnalysis(Analysis):
             else:
                 plt.close("all")
         else:
-            print "Not enough LPs for SurfaceDensityDistributionAnalysis"
-        print "SurfaceDensityDistributionAnalysis ready"
+            print("Not enough LPs for SurfaceDensityDistributionAnalysis")
+        print("SurfaceDensityDistributionAnalysis ready")
 
 
 class ExportCoordinatesTxtAnalysis(Analysis):
@@ -2286,16 +2287,16 @@ class ExportCoordinatesTxtAnalysis(Analysis):
 
 
     def compute(self, points):
-        print "ExportCoordinatesTxtAnalysis"
+        print("ExportCoordinatesTxtAnalysis")
 
         if str(self.storm_file_path).find("results") != -1:
             index = str(self.storm_file_path).find("results")
             infilename = str(self.storm_file_path)[:index]+str(self.storm_file_path)[index+8:]
             outfilename = self.storm_file_path[:-4]+"_batch.txt"
-            print "export"
-            print infilename
-            print self.storm_file_path
-            print self.storm_file_name
+            print("export")
+            print(infilename)
+            print(self.storm_file_path)
+            print(self.storm_file_name)
         else:
             infilename = self.storm_file_path
             outfilename = os.path.join(
@@ -2317,7 +2318,7 @@ class ExportCoordinatesTxtAnalysis(Analysis):
             if len(points[k])>0:
                 linestoexport = numpy.empty((len(points[k]), 1), dtype=numpy.int)
                 linestoexport = numpy.asarray(points[k])[:, 6]
-                #print linestoexport
+                #print(linestoexport)
                 n = 0
                 m = 0
                 for line in f_in:
@@ -2329,16 +2330,16 @@ class ExportCoordinatesTxtAnalysis(Analysis):
                     n += 1
                 f_in.close()
             else:
-                print "empty channel"
+                print("empty channel")
         f_out.close()
-        #print 'ROI Coordinate export ready'
+        #print('ROI Coordinate export ready')
 
         # exporting ROI attributes
         ConfocalSizeMultiplier=self.StormDisplay.ConfocalSizeMultiplier
 
 
         offset=[self.confocal_offset[1]/ConfocalSizeMultiplier, self.confocal_offset[0]/ConfocalSizeMultiplier]
-        # print ConfocalSizeMultiplier
+        # print(ConfocalSizeMultiplier)
 
 
 
@@ -2437,7 +2438,7 @@ class ExportCoordinatesTxtAnalysis(Analysis):
                     f_roi.write(str(roi.elementAt(k).x)+'\t'+str(roi.elementAt(k).y)+'\n')
 
             f_roi.close()
-        print 'ExportCoordinatesTxtAnalysis ready'
+        print('ExportCoordinatesTxtAnalysis ready')
 
 
 
@@ -2451,7 +2452,7 @@ class ExportCoordinatesPdbAnalysis(Analysis):
 
     def compute(self, points):
 
-        print "ExportCoordinatesPdbAnalysis"
+        print("ExportCoordinatesPdbAnalysis")
 
         channel_nr= numpy.where(numpy.asarray(self.storm_channels_visible) == True)
         visible_channel_nr=numpy.asarray(channel_nr)[0]
@@ -2473,8 +2474,8 @@ class ExportCoordinatesPdbAnalysis(Analysis):
                 else:
                     self.computed_values_export += self.PDB_format(coord, ' O', 'A', 1)
             else:
-                print "empty channel"
-        print "ExportCoordinatesPdbAnalysis ready"
+                print("empty channel")
+        print("ExportCoordinatesPdbAnalysis ready")
 
 
 class ExportCoordinatesVmdAnalysis(Analysis):
@@ -2543,7 +2544,7 @@ class BayesianClusteringAnalysis(Analysis):
 
     def compute(self, points):
 
-        print 'Bayesian_clustering_analysis'
+        print('Bayesian_clustering_analysis')
 
         self.computed_values_multiple = 'storm_file\tROI_tag\tchannel_ID\tcluster_ID\tNLP_per_cluster' \
                                         '\tV_hull_per_cluster(um^3)\tmax_distance_per_cluster(um)\tbest_radius(nm)\tbest_threshold\n'
@@ -2650,7 +2651,7 @@ class BayesianClusteringAnalysis(Analysis):
                 a = svector[3].membership
             except:
                 ok = False
-                print ("All points belong to the background")
+                print(("All points belong to the background"))
 
             if ok:
                 """
@@ -2765,7 +2766,7 @@ class BayesianClusteringAnalysis(Analysis):
 
                 if(len(vec)==0):
                     ok2=False;
-                    print ("All points belong to the background")
+                    print(("All points belong to the background"))
             else:
                 self.computed_values_simple.append([self.storm_channel_list[m] + '_cluster#_Bayesian', str(0)])
                 self.computed_values_simple.append([self.storm_channel_list[m] + '_mean_LP/cluster_Bayesian', str(0)])
@@ -2820,8 +2821,8 @@ class BayesianClusteringAnalysis(Analysis):
 
 
 
-                #print svector[ind][0]
-                #print svector[ind][1]
+                #print(svector[ind][0])
+                #print(svector[ind][1])
                 colorlist = numpy.ones((len(vec), 3))
 
                 if self.analysis_bayesian_export_pdb ==True:
@@ -2884,7 +2885,7 @@ class BayesianClusteringAnalysis(Analysis):
             ax1.set_zlim(mid_z - max_range, mid_z + max_range)
             plt.show()
 
-        print "Bayesian_clustering_analysis ready"
+        print("Bayesian_clustering_analysis ready")
 
 
 
@@ -2896,12 +2897,12 @@ class BayesianClusteringAnalysis(Analysis):
 #         self.computed_values_multiple = None
 #
 #     def compute(self, points):
-#         print 'New_analysis'
+#         print('New_analysis')
 # GUI elements: checkable analysis groupbox named groupBox_analysis_new,
 # an example spinbox named spinBox_analysis_new_example
 # an export checkbox named checkBox_analysis_new_save_all
 
-#         print self.analysis_new_example # value of a spinbox named spinBox_analysis_new_example
+#         print(self.analysis_new_example # value of a spinbox named spinBox_analysis_new_example)
 #
 #         self.computed_values_simple.append(['new_result_name','new_result_value']) # export results to common file
 #         self.computed_values_multiple='new_result_name_1'+ '\t' +'new_result_name_2'+ '\n' # separate results file

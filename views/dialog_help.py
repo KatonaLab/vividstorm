@@ -1,63 +1,50 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui\dialog_help.ui'
+# Form implementation generated from reading ui file 'gui/dialog_help.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
-
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_Dialog_help_2(object):
     def setupUi(self, Dialog_help_2):
-        Dialog_help_2.setObjectName(_fromUtf8("Dialog_help_2"))
+        Dialog_help_2.setObjectName("Dialog_help_2")
         Dialog_help_2.resize(274, 258)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog_help_2.sizePolicy().hasHeightForWidth())
         Dialog_help_2.setSizePolicy(sizePolicy)
         Dialog_help_2.setMaximumSize(QtCore.QSize(640, 480))
-        Dialog_help_2.setStyleSheet(_fromUtf8("QWidget{\n"
+        Dialog_help_2.setStyleSheet("QWidget{\n"
 "    background-color: rgb(67, 67, 67);\n"
 "    color: rgb(255, 255, 255);\n"
-"}"))
-        self.verticalLayout = QtGui.QVBoxLayout(Dialog_help_2)
-        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.Dialog_help = QtGui.QPlainTextEdit(Dialog_help_2)
-        self.Dialog_help.setObjectName(_fromUtf8("Dialog_help"))
+"}")
+        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog_help_2)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.Dialog_help = QtWidgets.QPlainTextEdit(Dialog_help_2)
+        self.Dialog_help.setObjectName("Dialog_help")
         self.verticalLayout.addWidget(self.Dialog_help)
-        self.label = QtGui.QLabel(Dialog_help_2)
+        self.label = QtWidgets.QLabel(Dialog_help_2)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setObjectName(_fromUtf8("label"))
+        self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
-        self.buttonBox = QtGui.QDialogButtonBox(Dialog_help_2)
+        self.buttonBox = QtWidgets.QDialogButtonBox(Dialog_help_2)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(Dialog_help_2)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), Dialog_help_2.accept)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), Dialog_help_2.reject)
+        self.buttonBox.accepted.connect(Dialog_help_2.accept)
+        self.buttonBox.rejected.connect(Dialog_help_2.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog_help_2)
 
     def retranslateUi(self, Dialog_help_2):
-        Dialog_help_2.setWindowTitle(_translate("Dialog_help_2", "VividSTORM help", None))
+        _translate = QtCore.QCoreApplication.translate
+        Dialog_help_2.setWindowTitle(_translate("Dialog_help_2", "VividSTORM help"))
         self.Dialog_help.setPlainText(_translate("Dialog_help_2", "VividSTORM User Guide can be downloaded from:\n"
 "www.katonalab/VividSTORM\n"
 "\n"
@@ -68,5 +55,5 @@ class Ui_Dialog_help_2(object):
 "Correlated confocal and super-resolution imaging by VividSTORM\n"
 "Nature Protocols 11, 163–183 (2016)\n"
 "doi:10.1038/nprot.2016.002\n"
-"", None))
+""))
 

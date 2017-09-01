@@ -12,7 +12,7 @@ import math
 
 import cv2
 from matplotlib import pyplot as plt
-from active_contour import morphsnakes
+from .active_contour import morphsnakes
 
 from views.dialog_error import Ui_Dialog_error
 from views.dialog_loading import Ui_Dialog_loading
@@ -32,15 +32,14 @@ import numpy
 import scipy
 import scipy.cluster.vq as Clust
 
-from default_config import version as \
+from .default_config import version as \
     version_num
-from analyses import *
+from .analyses import *
 from scipy import ndimage
 from scipy.interpolate import splprep, splev
-import images
-import settings
-from PyQt4.QtGui import QListWidgetItem
-from PyQt4.QtCore import QString
+from . import images
+from . import settings
+from PyQt5.QtWidgets import QListWidgetItem
 import matplotlib.pyplot as plt
 
 class AboutDialog(Ui_Dialog_about):
@@ -259,7 +258,7 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
 
 
     def run(self):
-        print "Active contour"
+        print("Active contour")
 
         iteration = numpy.int(self.spinBox_iteration_cycles.value())
         mu = numpy.int(self.spinBox_mu.value())
@@ -323,14 +322,14 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
             channel_storm = self.main_window.viewer.display.StormChannelVisible.index(True)
             subarray = []
             numpy.set_printoptions(threshold=numpy.nan)
-            #print self.confocal_image.ConfocalData[0][0][0].dtype
+            #print(self.confocal_image.ConfocalData[0][0][0].dtype)
 
             if len(self.main_window.viewer.display.ConfChannelToShow) == 1:
 
                 subarray = self.confocal_image.ConfocalData
 
             else:
-                print self.confocal_image.ConfocalData.shape
+                print(self.confocal_image.ConfocalData.shape)
                 for i in range(len(self.confocal_image.ConfocalData)):
                     subarray.append(self.confocal_image.ConfocalData[len(self.confocal_image.ConfocalData)-i-1][channel])
 
@@ -339,7 +338,7 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
             self.formWidget.window().close()
 
             macwe = morphsnakes.MorphACWE(img, smoothing=mu, lambda1=lambda1, lambda2=lambda2)
-            print img.shape
+            print(img.shape)
             macwe.levelset = morphsnakes.circle_levelset(img.shape, (self.z_position,position[0],position[1]), r)
             acroi=morphsnakes.evolve_visual3d(macwe, num_iters=iteration)
             if dilation_nr != 0:
@@ -356,7 +355,7 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
             inside_pixels = numpy.ndarray.tolist(tr3)
 
             #inside_pixels = [x for x in inside_pixels if x not in edgecoords_3d]
-            print self.viewer.display.ConfocalMetaData['SizeX']
+            print(self.viewer.display.ConfocalMetaData['SizeX'])
 
             for i in range(len(inside_pixels)):
                 inside_pixels[i] =(int(inside_pixels[i][2] * 1000 * self.viewer.display.ConfocalMetaData['SizeX'] + conf_offset[1]+self.viewer.display.ConfocalMetaData['SizeX']*1000/2),
@@ -384,7 +383,7 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
             """
             inside_pixels2=numpy.array(inside_pixels)
             inside_pixels=inside_pixels2
-            print "start"
+            print("start")
             dist=[]
             x_half= self.viewer.display.ConfocalMetaData['SizeX']*1000/2
             y_half= self.viewer.display.ConfocalMetaData['SizeY']*1000/2
@@ -401,8 +400,8 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
                                 dist.append((int(self.StormData_to_analyse[channel_storm][i][1])-inside_pixels[j][1]))
                                 dist.append((int(self.StormData_to_analyse[channel_storm][i][2])-inside_pixels[j][2]))
                                 break
-            print "max"
-            print max(dist)
+            print("max")
+            print(max(dist))
             inside_roi_storm = numpy.array(inside_roi)
 
             if visualization:
@@ -420,8 +419,8 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
                     y1 = int((float(inside_pixels[i][1]-conf_offset[0])/self.viewer.display.ConfocalMetaData['SizeY']/1000-ym)*5)
                     z1 = int((float(inside_pixels[i][2]+150*self.z_position+self.viewer.display.ConfocalMetaData['SizeZ']*1000/2)/self.viewer.display.ConfocalMetaData['SizeZ']/1000)*10)
                     inside_pixels[i]=numpy.array([int(round(x1)),int(round(y1)),int(round(z1))])
-                print type(inside_pixels[0][0])
-                print inside_pixels[0][0]
+                print(type(inside_pixels[0][0]))
+                print(inside_pixels[0][0])
 
 
 
@@ -494,7 +493,7 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
                 for i in range(len(inside_roi)):
                     #if poly1.contains(Point(inside_roi[i][0], inside_roi[i][1])):
                         im1.putpixel((inside_roi[i][0], inside_roi[i][1]),(255,0,0))
-                print type(inside_pixels[0][0])
+                print(type(inside_pixels[0][0]))
 
 
                 draw1.line(pg1,width=2)
@@ -632,7 +631,7 @@ class ActiveContourDialog(Ui_Dialog_active_contour):
                     Spline=False
                 if symax>ymax+500:
                     Spline=False
-                # print Spline
+                # print(Spline)
 
                 if Spline:
                     ACROI = []
@@ -824,7 +823,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
         return length/1000.0
 
     def run_batch_analyses(self):
-        print "Batch analyses"
+        print("Batch analyses")
 
         roicoords_folder = self.lineEdit_analysis_roicoords_name.text()
 
@@ -891,7 +890,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
             for file in roicoords_files2:
                 self.roi_perimeter=""
                 self.roi_area=""
-                print file
+                print(file)
                 tag=file[:file.find('.txt')]
                 tag2=file[:file.find('_RoiCoords.txt')]
                 filepath_w = file
@@ -951,13 +950,13 @@ class AnalysisDialog(Ui_Dialog_analysis):
                         roi_border_y = [float(i) for i in roi_border_y]
                         roi_border= zip(roi_border_x,roi_border_y)
                         try:
-                            print roi_tag
+                            print(roi_tag)
                             self.roi_area = self.areaOfActiveContourROI_2(roi_border)
                             self.roi_perimeter = self.lengthOfActiveContourROI_2(roi_border)
-                            print self.roi_perimeter
-                            print self.roi_area
+                            print(self.roi_perimeter)
+                            print(self.roi_area)
                         except:
-                            print tag2, "- no roi perimeter, area"
+                            print(tag2, "- no roi perimeter, area")
 
 
                 attr_file.close()
@@ -969,7 +968,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
                 y_offset=None
                 if conf_name is not None and self.main_window.viewer.current_confocal_image is not None and conf_b:
 
-                    confocal_image = images.ConfocalImage(QString(str(conf_name)))
+                    confocal_image = images.ConfocalImage(str(conf_name))
                     confocal_image.file_path = str(confocal_folder + '/' + conf_name[:-1])
                     confocal_image_name = str(confocal_folder + '/' + conf_name[:-1])
 
@@ -1038,11 +1037,11 @@ class AnalysisDialog(Ui_Dialog_analysis):
 
                 self.write_results_common_to_file_batch(values_simple, file[:-14],self.roi_perimeter,self.roi_area)
         else:
-            #print 'original STORM file analysis'
+            #print('original STORM file analysis')
             for file in roicoords_files2:
                 self.roi_perimeter=""
                 self.roi_area=""
-                print file
+                print(file)
                 tag=file[:file.find('.txt')]
                 filepath_w = file
 
@@ -1115,7 +1114,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
         values_simple = []
         StormData_to_analyse = storm_image.StormData
         StormData_to_analyse = self.main_window.storm_settings.filter_storm_data(StormData_to_analyse)
-        print "Batch analysis ready"
+        print("Batch analysis ready")
 
     def run_analyses(self):
         if self.radioButton_analysis_single.isChecked():
@@ -1194,7 +1193,7 @@ class AnalysisDialog(Ui_Dialog_analysis):
         f.close()
 
     def write_results_common_to_file_batch(self, computed_values_simple, filename,perimeter,area):
-        print "filename", filename
+        print("filename", filename)
         #filepath = self.lineEdit_analysis_roicoords_name.text()+'/results/'+filename+ '_Results.txt'
         filepath = self.main_window.working_directory+'/'+filename+ '_Results.txt'
 

@@ -7,14 +7,14 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
 import pyqtgraph.exporters
 import numpy as np
-from PyQt4.QtGui import *
+from PyQt5.QtGui import *
 import math
-import CustomViewBox
-import StormLUT
+from . import CustomViewBox
+from . import StormLUT
 from .. import default_config
 import scipy.ndimage
 import os
-import ConfocalLUT
+from . import ConfocalLUT
 import gc
 import copy
 import numpy
@@ -192,8 +192,8 @@ class StormDisplay(object):
             #color channels only
             if self.ConfocalData.shape[1]>ConfocalDataThreshold:
                 self.ConfocalSizeMultiplier=1.0
-            self.ConfChannelToShow = np.zeros(
-                (self.ConfocalData.shape[0], self.ConfocalData.shape[1] *  self.ConfocalSizeMultiplier, self.ConfocalData.shape[2] *  self.ConfocalSizeMultiplier))
+            size_tuple = (self.ConfocalData.shape[0], int(self.ConfocalData.shape[1] * self.ConfocalSizeMultiplier), int(self.ConfocalData.shape[2] * self.ConfocalSizeMultiplier))
+            self.ConfChannelToShow = np.zeros(size_tuple)
             for i in range(self.ConfocalData.shape[0]):
                 self.ConfChannelToShow[i, :, :] = scipy.ndimage.zoom(self.ConfocalData[i, :, :],  self.ConfocalSizeMultiplier,
                                                                      order=self.ConfocalInterpolationMethod)
@@ -201,10 +201,10 @@ class StormDisplay(object):
             #a single tif image
             if self.ConfocalData.shape[0]>ConfocalDataThreshold:
                 self.ConfocalSizeMultiplier=1.0
-            self.ConfChannelToShow = np.zeros((1, self.ConfocalData.shape[0] *  self.ConfocalSizeMultiplier, self.ConfocalData.shape[1] *  self.ConfocalSizeMultiplier))
+            self.ConfChannelToShow = np.zeros((1, int(self.ConfocalData.shape[0] * self.ConfocalSizeMultiplier), int(self.ConfocalData.shape[1] * self.ConfocalSizeMultiplier)))
             self.ConfChannelToShow[0, :, :] = scipy.ndimage.zoom(self.ConfocalData,  self.ConfocalSizeMultiplier,
                                                                  order=self.ConfocalInterpolationMethod)
-        # print self.ConfocalSizeMultiplier
+        # print(self.ConfocalSizeMultiplier)
 
     def DeleteConfocalData(self):              
         if self.Viewbox != []:
@@ -375,7 +375,7 @@ class StormDisplay(object):
                 ACROI.append(MinPoint)
                 CurrentPoint=MinPoint
         zoom =1000.0 * self.ConfocalMetaData['SizeX']
-        print self.ConfocalOffset()
+        print(self.ConfocalOffset())
         for i in range(len(ACROI)):
             ACROI[i] = [ACROI[i][1] * 1000.0 * self.ConfocalMetaData['SizeY'] + self.ConfocalOffset()[1] * 100.0 * self.ConfocalMetaData['SizeY'] + zoom / 2.0,
                         ACROI[i][0] * 1000.0 * self.ConfocalMetaData['SizeX'] + self.ConfocalOffset()[0] * 100.0 * self.ConfocalMetaData['SizeX'] + zoom / 2.0]#zoom
@@ -548,12 +548,12 @@ class StormDisplay(object):
     def getPixelIntensityInRoi(self, roi, roitype, offset):
 
         img=self.ConfChannelToShow
-        #print img.shape
+        #print(img.shape)
 
 
         zoomout=1.0/self.main_window.viewer.display.ConfocalSizeMultiplier
         resizedim=scipy.ndimage.zoom(img,(1,zoomout,zoomout),order=0)
-        #print resizedim.shape
+        #print(resizedim.shape)
 
         PixelsXX=[]
         PixelsYY=[]
@@ -567,8 +567,8 @@ class StormDisplay(object):
         elif roitype=='Ellipse':
             roiShape = roi.mapToParent(roi.shape())
 
-	offset[0]=offset[0]*1000.0*self.ConfocalMetaData['SizeX']
-	offset[1]=offset[1]*1000.0*self.ConfocalMetaData['SizeX']
+        offset[0]=offset[0]*1000.0*self.ConfocalMetaData['SizeX']
+        offset[1]=offset[1]*1000.0*self.ConfocalMetaData['SizeX']
         for ii in range(resizedim.shape[1]):
             for jj in range(resizedim.shape[2]):
                 Scale=1000.0
@@ -576,7 +576,7 @@ class StormDisplay(object):
                     PixelsXX.append(ii)
                     PixelsYY.append(jj)
 
-	NumPixelss=len(PixelsXX)
+        NumPixelss=len(PixelsXX)
         Intensitiess=[]
         for chh in range(resizedim.shape[0]):
             # calculate pixelpoint back to display point
@@ -584,8 +584,8 @@ class StormDisplay(object):
             for ind in range(NumPixelss):
                 SumIntensity+=resizedim[chh,PixelsYY[ind],PixelsXX[ind]]
             Intensitiess.append(SumIntensity)
-        print Intensitiess
-        #print NumPixelss
+        print(Intensitiess)
+        #print(NumPixelss)
 
         return [Intensitiess,NumPixelss]
   
@@ -839,7 +839,7 @@ class StormDisplay(object):
             YCoords = []
             DrawTogether=False
             if self.StormZColoring == True:
-                # print "Zcoloring"
+                # print("Zcoloring")
                 Intensity = Gausses[:, 3]
                 Intensity = Intensity - np.amin(Intensity) + 0.1
                 Intensity = Intensity / np.amax(Intensity)

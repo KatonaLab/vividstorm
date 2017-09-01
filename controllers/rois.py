@@ -8,8 +8,8 @@ Author: turbo
 """
 
 import os
-from PyQt4.QtGui import QListWidgetItem
-from PyQt4 import QtCore
+from PyQt5.QtWidgets import QListWidgetItem
+from PyQt5 import QtCore
 
 class Roi(QListWidgetItem):
     def __init__(self, *args, **kwargs):

@@ -9,7 +9,7 @@ Classes for storing settings and filters, applicable for any Storm or Confocal f
 
 from functools import partial
 
-from filters import *
+from .filters import *
 
 
 """functions starting with 'apply' in child Settings classes
@@ -86,7 +86,7 @@ class Settings(object):
                         func = getattr(self, setting_key)
                         func()
                     except AttributeError:
-                        print "no method to run with this apply button's naming convention"
+                        print("no method to run with this apply button's naming convention")
 
 
 class StormSettings(Settings):
@@ -115,7 +115,7 @@ class StormSettings(Settings):
         filtered_points = copy(points)
         for filter_ in self.filters:
             if filter_.enabled:
-                print filter_.name_prefix
+                print(filter_.name_prefix)
                 filtered_points = filter_.run(filtered_points)
         return filtered_points
 

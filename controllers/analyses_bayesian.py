@@ -4,7 +4,7 @@ import scipy
 import math
 import numpy
 from sklearn.metrics.pairwise import pairwise_distances
-import igraph
+import jgraph
 import matplotlib.pyplot as plt
 import matplotlib
 

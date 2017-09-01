@@ -51,7 +51,7 @@ class TickSliderItem(pg.GraphicsWidget):
         self.tickSize = 15
         self.ticks = {}
         self.maxDim = 20
-	self.channelColor=color
+        self.channelColor=color
         self.allowAdd = allowAdd
         if 'tickPen' in kargs:
             self.tickPen = fn.mkPen(self.channelColor)
@@ -176,7 +176,7 @@ class TickSliderItem(pg.GraphicsWidget):
         self.ticks[tick] = float(newX) / self.length
     
     def tickMoveFinished(self, tick):
-	pass
+        pass
     
     def tickClicked(self, tick, ev):
         if ev.button() == QtCore.Qt.RightButton:
@@ -240,7 +240,7 @@ class TickSliderItem(pg.GraphicsWidget):
                 return
             pos.setX(min(max(pos.x(), 0), self.length))            
         elif ev.button() == QtCore.Qt.RightButton:
-		a=5
+            a=5
         
         #if  ev.button() == QtCore.Qt.RightButton:
             #if self.moving:
@@ -571,23 +571,23 @@ class GradientEditorItem(TickSliderItem):
                 self.updateGradient()
                 
     def tickMoved(self, tick, pos):
-        #private	
+        #private    
         TickSliderItem.tickMoved(self, tick, pos)
         self.updateGradient()
 
     def tickMoveFinished(self, tick):
-	    Pos=[1,0]
-	    count=0
-	    for x,t in self.listTicks():
-		    Pos[count]=t
-		    count+=1
-	    (self.PlotWindow).UpdateConfocalChannel(self.ChannelNumber,Pos)
-	    #udapte spinboxes
-	    self.LowerSpin.setValue(Pos[0]*100)
-	    self.UpperSpin.setValue(Pos[1]*100)
-	    
-	    #update plot
-	    self.sigGradientChangeFinished.emit(self)
+        Pos=[1,0]
+        count=0
+        for x,t in self.listTicks():
+            Pos[count]=t
+            count+=1
+        (self.PlotWindow).UpdateConfocalChannel(self.ChannelNumber,Pos)
+        #udapte spinboxes
+        self.LowerSpin.setValue(Pos[0]*100)
+        self.UpperSpin.setValue(Pos[1]*100)
+        
+        #update plot
+        self.sigGradientChangeFinished.emit(self)
 
     
 
@@ -724,7 +724,7 @@ class GradientEditorItem(TickSliderItem):
     def mouseReleaseEvent(self, ev):
         #private
         TickSliderItem.mouseReleaseEvent(self, ev)
-	self.updateGradient()
+        self.updateGradient()
         
     def addTick(self, x, color=None, movable=True, finish=True):
         """
@@ -853,7 +853,7 @@ class Tick(QtGui.QGraphicsObject):  ## NOTE: Making this a subclass of GraphicsO
 
 
     def mouseDragEvent(self, ev):
-	if self.movable and ev.button() == QtCore.Qt.LeftButton:
+        if self.movable and ev.button() == QtCore.Qt.LeftButton:
             if ev.isStart():
                 self.moving = True
                 self.cursorOffset = self.pos() - self.mapToParent(ev.buttonDownPos())
@@ -925,7 +925,7 @@ class Tick(QtGui.QGraphicsObject):  ## NOTE: Making this a subclass of GraphicsO
             ##self.view.tickChanged(self, delete=True)
             
     def mouseReleaseEvent(self, ev):
-	a=5
+        a=5
         #if not self.movedSincePress:
             #self.view().tickClicked(self, ev)
         

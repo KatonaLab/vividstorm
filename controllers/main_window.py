@@ -7,17 +7,17 @@ Author: turbo
 
 """
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 # from views.main_window import Ui_MainWindow
-import default_config
+# import .default_config
 from views.main_window import Ui_MainWindow
-from viewer.viewer import Viewer
-from dialogs import *
-from images import *
-from rois import FreehandRoi
-from settings import *
+from .viewer.viewer import Viewer
+from .dialogs import *
+from .images import *
+from .rois import FreehandRoi
+from .settings import *
 import os
-import analyses as anal
+from . import analyses as anal
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -137,14 +137,8 @@ class MainWindow(Ui_MainWindow):
         self.actionImage_Registration.triggered.connect(lambda: self._open_dialog(self.dialog_imageregistration))
 
     def _add_key_shortcuts(self):
-        QtCore.QObject.connect(
-            QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_PageDown), self.pushButton_next_batch),
-            QtCore.SIGNAL('activated()'),
-            lambda: self._batch_step_files_by(1))
-        QtCore.QObject.connect(
-            QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_PageUp), self.pushButton_prev_batch),
-            QtCore.SIGNAL('activated()'),
-            lambda: self._batch_step_files_by(-1))
+        QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_PageDown), self.pushButton_next_batch).activated.connect(lambda: self._batch_step_files_by(1))
+        QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_PageUp), self.pushButton_prev_batch).activated.connect(lambda: self._batch_step_files_by(-1))
 
     def _add_input_handlers(self):
         self.pushButton_open_storm.clicked.connect(lambda: self._open_files('storm'))
@@ -271,7 +265,7 @@ class MainWindow(Ui_MainWindow):
             extensions = "STORM coordinates (*.txt)"
             files_list = QtGui.QFileDialog.getOpenFileNames(file_dialog, title,
                                                             self.working_directory, extensions)
-            for file_ in files_list:
+            for file_ in files_list[0]:
                 storm_image = StormImage(file_)
                 self.storm_images_list.addItem(storm_image)
         elif mode == 'confocal':
@@ -282,7 +276,7 @@ class MainWindow(Ui_MainWindow):
                          ")"
             files_list = QtGui.QFileDialog.getOpenFileNames(file_dialog, title,
                                                             self.working_directory, extensions)
-            for file_ in files_list:
+            for file_ in files_list[0]:
                 confocal_image = ConfocalImage(file_)
                 self.confocal_images_list.addItem(confocal_image)
 
@@ -312,8 +306,8 @@ class MainWindow(Ui_MainWindow):
                 self.confocal_images_list.setCurrentRow(-1)
 
     def _batch_step_files_by(self, step_size):
-	#delete roi
-	self.viewer.remove_roi(self.storm_roi_list.currentItem())
+        #delete roi
+        self.viewer.remove_roi(self.storm_roi_list.currentItem())
         storm_num = self.storm_images_list.count()
         next_active_row = self.storm_images_list.currentRow() + step_size
         if 0 <= next_active_row <= storm_num - 1:

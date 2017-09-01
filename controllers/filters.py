@@ -12,7 +12,7 @@ import scipy
 from scipy import spatial
 from numpy import *
 
-from util import RunnableComponent
+from .util import RunnableComponent
 
 
 class Filter(RunnableComponent):
@@ -29,7 +29,7 @@ class ZFilter(Filter):
         super(ZFilter, self).__init__(*args, **kwargs)
 
     def run(self, points):
-        print "ZFilter"
+        print("ZFilter")
         out=[]
 
         for k in range(len(points)):
@@ -50,7 +50,7 @@ class PhotonFilter(Filter):
         super(PhotonFilter, self).__init__(*args, **kwargs)
 
     def run(self, points):
-        print 'PhotonFilter'
+        print('PhotonFilter')
         out=[]
         for k in range(len(points)):
             indsplus=numpy.where(numpy.asarray(points[k])[:,4]>self.storm_filter_photon_to)
@@ -68,7 +68,7 @@ class FrameFilter(Filter):
         super(FrameFilter, self).__init__(*args, **kwargs)
 
     def run(self, points):
-        print 'FrameFilter'
+        print('FrameFilter')
         outpoints=[]
         for k in range(len(points)):
             indsplus=numpy.where(numpy.asarray(points[k])[:,6]>self.storm_filter_frame_to)
@@ -89,7 +89,7 @@ class LocalDensityFilter(Filter):
     def run(self, points):
         """filter data for localizations with n neighbors within eps.
         Returns list of indices of included points."""
-        print "LdFilter"
+        print("LdFilter")
         outpoints=[]
         for k in range(len(points)):
             rsd=numpy.empty((len(points[k]), 3), dtype=numpy.int)

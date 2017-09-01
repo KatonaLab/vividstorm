@@ -8,12 +8,14 @@ Author: turbo
 """
 import os
 import xml.etree.ElementTree as XMLET
+import pandas as pd
+import numpy as np
 
 import numpy
-from PyQt4.QtGui import QListWidgetItem
+from PyQt5.QtWidgets import QListWidgetItem
 from pyqtgraph.Qt import QtGui
-from PyQt4.Qt import *
-from viewer import tifffile
+from PyQt5.Qt import *
+from .viewer import tifffile
 
 
 class MicroscopeImage(QListWidgetItem):
@@ -40,6 +42,9 @@ class StormImage(MicroscopeImage):
 
     def parse(self):
         self.isParsingNeeded = False
+        dt = pd.read_csv(self.file_path, delimiter='\t')
+
+
         # Decrease the parameters by one, because indexing goes from zero, but zeros means ignore property
         X = self.coords_cols[0] - 1
         Y = self.coords_cols[1] - 1
@@ -103,7 +108,7 @@ class StormImage(MicroscopeImage):
                     else:
                         UsefulData.append('-1')
                     UsefulData.append(Row)
-                    UsefulData = numpy.array(map(float, UsefulData))
+                    UsefulData = numpy.array(UsefulData, dtype=np.float)
 
                     # UsefulData[0] + 1
                     #i do not delete the last element from the line,but overwrite with the row number
@@ -157,6 +162,9 @@ class StormImage(MicroscopeImage):
             self.StormData = numpy.array(SortedDataMxp)
         except ValueError:
             raise
+
+        print(self.StormData.shape)
+        print(self.StormChannelList)
 
 
 class ConfocalImage(MicroscopeImage):
@@ -274,7 +282,7 @@ class ConfocalImage(MicroscopeImage):
                     #z channels only
                     NumOfZSlices=self.ConfocalData.shape[0]       
             elif len(self.ConfocalData.shape) > 1 and self.ConfocalMetaData['ChannelNum'] > 1:
-                    print self.ConfocalData.shape, self.ConfocalMetaData
+                    print(self.ConfocalData.shape, self.ConfocalMetaData)
                     #color channels only
                     NumOfZSlices=1
             else:

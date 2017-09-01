@@ -7,7 +7,7 @@ Author: turbo
 
 """
 
-from StormDisplay import StormDisplay
+from .StormDisplay import StormDisplay
 from .. import default_config
 from ..rois import EllipseRoi, CircleRoi, ActiveContourRoi, ActiveContourRoi3d
 import os
@@ -25,7 +25,7 @@ class Viewer(object):
         self.current_confocal_image = None
 
     def init_channel_colors(self, mode):
-        for i in xrange(0, 4):
+        for i in range(0, 4):
             color = getattr(self.main_window, 'comboBox_'+ mode + '_channel' + str(i) + '_color').currentText()
             if mode == 'storm':
                 self.display.StormChannelColors[i] = default_config.channel_colors[str(color)]
@@ -33,14 +33,14 @@ class Viewer(object):
                 self.display.ConfocalChannelColors[i] = default_config.channel_colors[str(color)]
 
     def reset_all_channels_bottom_settings(self, mode):
-        for i in xrange(0, 4):
+        for i in range(0, 4):
             getattr(self.main_window, 'checkBox_'+ mode + '_channel' + str(i)).setEnabled(False)
             # getattr(self.main_window, 'checkBox_'+ mode + '_channel' + str(i)).setChecked(False)
             getattr(self.main_window, 'checkBox_'+ mode + '_channel' + str(i)).setText('Ch' + str(i+1))
             getattr(self.main_window, 'comboBox_'+ mode + '_channel' + str(i) + '_color').setEnabled(False)
 
         if mode == 'storm':
-            for i in xrange(0, 4):
+            for i in range(0, 4):
                 getattr(self.main_window, 'label_' + mode + '_channel' + str(i) + '_info').setText('-')
         elif mode == 'confocal':
             getattr(self.main_window, 'label_' + mode + '_info').setText('-')
@@ -123,7 +123,7 @@ class Viewer(object):
 
             # self.main_window.label_confocal_channel0_info.setText(str(currentImage.ConfocalMetaData))
 
-            for i in xrange(currentImage.ConfocalMetaData['ChannelNum']):
+            for i in range(currentImage.ConfocalMetaData['ChannelNum']):
                 self.set_channel_bottom_settings('confocal', i, str(i),
                     '[All channels] ' +
                     'Pixel size: ' + str(self.display.ConfocalMetaData['SizeX']) +' | '+
@@ -224,7 +224,7 @@ class Viewer(object):
 
 
     def remove_roi(self, roi):
-	if type(roi).__name__ == 'EllipseRoi' or type(roi).__name__ == 'CircleRoi':
+        if type(roi).__name__ == 'EllipseRoi' or type(roi).__name__ == 'CircleRoi':
             self.display.deleteEllipseROI(roi.roi)
         elif type(roi).__name__ == 'FreehandRoi':
             self.display.deleteFreehandROI(roi)
