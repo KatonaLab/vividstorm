@@ -47,8 +47,8 @@ class StormDisplay(object):
         self.ConfocalTransparency = 0.8
         self.StormTransparency = 0.5
         self.StormZColoring = False
-        
-        self.ConfocalSizeMultiplier = 10.0
+
+        self.ConfocalSizeMultiplier = 1.0
 
         self.plot_widget = QWidget()
         self.Viewbox = []
@@ -92,13 +92,13 @@ class StormDisplay(object):
             roi = self.main_window.storm_roi_list.currentItem()
             if roi:
                 if type(roi).__name__ == 'EllipseRoi' or type(roi).__name__ == 'CircleRoi':
-                   self.StormData_filtered = self.filterROIPoints(roi.roi,'Circle',channels)           
+                   self.StormData_filtered = self.filterROIPoints(roi.roi,'Circle',channels)
                 elif type(roi).__name__ == 'FreehandRoi':
-                   self.StormData_filtered = self.filterROIPoints( roi.roi,'Freehand',channels)                
+                   self.StormData_filtered = self.filterROIPoints( roi.roi,'Freehand',channels)
                 elif type(roi).__name__ == 'ActiveContourRoi':
                     self.StormData_filtered = self.filterROIPoints(roi.roi,'Activecontour',channels)
 
-         
+
 
     def SetStormChannelVisible(self, ChannelNumber, Visible):
         self.StormChannelVisible[ChannelNumber] = Visible
@@ -110,7 +110,7 @@ class StormDisplay(object):
             if V:
                 self.main_window.comboBox_storm_filter_ROI_channel.addItem(self.StormChannelList[index])
             index+=1
-        
+
         self.ShowAll()
 
     def SetStormChannelColor(self, ChannelNumber, Color):
@@ -133,7 +133,7 @@ class StormDisplay(object):
                 self.Viewbox.removeItem(StormCh)
         for R in self.Viewbox.StormMarkerRois:
                 self.plot_widget.removeItem(R)
-        self.Viewbox.StormMarkerRois = []         
+        self.Viewbox.StormMarkerRois = []
         self.StormData = []
         self.StormData_filtered = []
         self.StormChannelList = []
@@ -141,12 +141,12 @@ class StormDisplay(object):
         try:
             self.plot_widget.clear()
         except:
-            pass   
+            pass
         self.ShowAll()
-        
-        
+
+
     def ClearAll(self):
-        self.plot_widget.clear() 
+        self.plot_widget.clear()
         self.DisplayedStormChannel = [0, 0, 0, 0]
         self.DisplayedConfocalChannel = [0, 0, 0, 0]
 
@@ -161,8 +161,8 @@ class StormDisplay(object):
         self.DisplayedStormChannel = [0, 0, 0, 0]
         self.DisplayedConfocalChannel = [0, 0, 0, 0]
 
-    def AddConfocalData(self, confocal_image):    
-        self.ConfocalSizeMultiplier=10.0        
+    def AddConfocalData(self, confocal_image):
+        self.ConfocalSizeMultiplier=1.0
         self.ConfocalData = copy.deepcopy(confocal_image.ConfocalData)
         self.ConfocalMetaData = copy.deepcopy(confocal_image.ConfocalMetaData)
         self.NumOfZSlices=0
@@ -206,30 +206,30 @@ class StormDisplay(object):
                                                                  order=self.ConfocalInterpolationMethod)
         # print(self.ConfocalSizeMultiplier)
 
-    def DeleteConfocalData(self):              
+    def DeleteConfocalData(self):
         if self.Viewbox != []:
             self.Viewbox.deleteConfocalImage()
             for R in self.Viewbox.ConfMarkerRois:
                 self.plot_widget.removeItem(R)
-            self.Viewbox.ConfMarkerRois = []            
+            self.Viewbox.ConfMarkerRois = []
             self.Viewbox.AffineTransform = []
         for ConfCh in self.DisplayedConfocalChannel:
             if ConfCh!=0:
-                self.Viewbox.removeItem(ConfCh)       
+                self.Viewbox.removeItem(ConfCh)
         if self.ConfocalImage!=[]:
             self.ConfocalImage.reset_data()
         self.ConfocalMetaData = {}
-        self.DisplayedConfocalChannel[:]        
+        self.DisplayedConfocalChannel[:]
         for a in self.DisplayedConfocalChannel:
             del a
         del self.DisplayedConfocalChannel[:]
         del self.DisplayedConfocalChannel
         self.DisplayedConfocalChannel = [0, 0, 0, 0]
-        self.ConfChannelToShow = [] 
-        self.ConfocalSizeMultiplier=10.0
+        self.ConfChannelToShow = []
+        self.ConfocalSizeMultiplier=1.0
         del self.ConfocalData
         self.ConfocalData = []
-        self.main_window.viewer.unload_confocal_image(True)  
+        self.main_window.viewer.unload_confocal_image(True)
         try:
             self.plot_widget.clear()
         except:
@@ -237,8 +237,8 @@ class StormDisplay(object):
         gc.collect()
         gc.collect()
         self.ShowAll()
-        
-   
+
+
     def ShowAll(self):
         self.main_window.status_bar.showMessage('Recalculating image, please wait...')
         self.ClearPlot()
@@ -247,11 +247,11 @@ class StormDisplay(object):
         StormFileName=''
         if self.main_window.viewer.current_storm_image!=None:
                 StormFileName=str.split(self.main_window.viewer.current_storm_image.file_path,os.sep)[-1]
-        ConfocalFileName='' 
-        if self.main_window.viewer.current_confocal_image!=None:  
+        ConfocalFileName=''
+        if self.main_window.viewer.current_confocal_image!=None:
                 ConfocalFileName=str.split(self.main_window.viewer.current_confocal_image.file_path,os.sep)[-1]
         self.main_window.status_bar.showMessage('Ready '+'StormFile:'+StormFileName+' ConfocalFile:'+ConfocalFileName)
-            
+
     def export_as_image(self, file_path):
         exporter = pg.exporters.ImageExporter(self.plot_widget.getPlotItem())
         # exporter.parameters()['width'] = 100   # (note this also affects height parameter)
@@ -375,7 +375,6 @@ class StormDisplay(object):
                 ACROI.append(MinPoint)
                 CurrentPoint=MinPoint
         zoom =1000.0 * self.ConfocalMetaData['SizeX']
-        print(self.ConfocalOffset())
         for i in range(len(ACROI)):
             ACROI[i] = [ACROI[i][1] * 1000.0 * self.ConfocalMetaData['SizeY'] + self.ConfocalOffset()[1] * 100.0 * self.ConfocalMetaData['SizeY'] + zoom / 2.0,
                         ACROI[i][0] * 1000.0 * self.ConfocalMetaData['SizeX'] + self.ConfocalOffset()[0] * 100.0 * self.ConfocalMetaData['SizeX'] + zoom / 2.0]#zoom
@@ -468,7 +467,7 @@ class StormDisplay(object):
                     if self.StormChannelVisible[i]:
                         ROIPoints[-1]=self.StormData_filtered[i]
         return ROIPoints
-        
+
     def getActiveContourROIPoints(self, roi):
         # this roi parameter should be the first return value 'pg.QtGui.QGraphicsPolygonItem(QtGui.QPolygonF(QtPoints))' of the createActiveContourROI function
         PolygonItem = roi[0]
@@ -544,7 +543,7 @@ class StormDisplay(object):
             roi = pg.CircleROI([Xpos, Ypos], [XLength, XLength])
         self.plot_widget.addItem(roi)
         return roi
-        
+
     def getPixelIntensityInRoi(self, roi, roitype, offset):
 
         img=self.ConfChannelToShow
@@ -558,7 +557,7 @@ class StormDisplay(object):
         PixelsXX=[]
         PixelsYY=[]
         if roitype=='Activecontour':
-            PolygonItem = roi[0]         
+            PolygonItem = roi[0]
             roiShape = PolygonItem.shape()
         elif roitype=='Freehand':
             roiShape = roi.shape()
@@ -584,11 +583,10 @@ class StormDisplay(object):
             for ind in range(NumPixelss):
                 SumIntensity+=resizedim[chh,PixelsYY[ind],PixelsXX[ind]]
             Intensitiess.append(SumIntensity)
-        print(Intensitiess)
         #print(NumPixelss)
 
         return [Intensitiess,NumPixelss]
-  
+
 
     def areaOfEllipseROI(self, roi):
         return math.pi * roi.size().x()/2 * roi.size().y()/2
@@ -648,7 +646,7 @@ class StormDisplay(object):
                                                    self.ConfocalChannelColors[ChannelNum][2], 255]], dtype=np.ubyte)
                 map = pg.ColorMap(pos, color)
                 ColorLut = map.getLookupTable(0.0, 1.0, 256)
-                
+
                 self.DisplayedConfocalChannel[ChannelNum].setLookupTable(ColorLut)
                 self.plot_widget.addItem(self.DisplayedConfocalChannel[ChannelNum])
 
@@ -664,7 +662,7 @@ class StormDisplay(object):
                 self.main_window.dialog_tool_lut.verticalLayout_confocal_lut.addWidget(self.ConfocalLUTWidget)
 
                 LowerSpin=self.main_window.dialog_tool_lut.spinBox_confocal_LUT_lower
-                UpperSpin=self.main_window.dialog_tool_lut.spinBox_confocal_LUT_upper  
+                UpperSpin=self.main_window.dialog_tool_lut.spinBox_confocal_LUT_upper
                 self.main_window.dialog_tool_lut.spinBox_confocal_LUT_lower.setValue(self.ConfocalLUTTickValues[ChannelNumber][0]*100)
                 self.main_window.dialog_tool_lut.spinBox_confocal_LUT_upper.setValue(self.ConfocalLUTTickValues[ChannelNumber][1]*100)
                 grad = ConfocalLUT.GradientEditorItem(self, ChannelNumber, LowerSpin, UpperSpin, orientation='top', )
@@ -677,27 +675,27 @@ class StormDisplay(object):
                 grad.setTickValue(grad.listTicks()[1][0], self.ConfocalLUTTickValues[ChannelNumber][1])
                 grad.updateGradient()
                 self.ConfocalLUTWidget.addItem(grad, 0, 0)
-                             
+
                 h =  self.DisplayedConfocalChannel[ChannelNumber].getHistogram()
                 for d in range(len(h[1])):
                     if h[1][d]>0:
                         h[1][d]=math.log(h[1][d])
                 curve = pg.PlotCurveItem(h[0],h[1], fillLevel=0, brush=(0, 0, 255, 80))
-                
+
                 plt1 = self.ConfocalLUTWidget.addPlot(1, 0)
                 plt1.addItem(curve)
-                
-                plt1.setLogMode(False,True)
-                
-                #plt1.setXRange(MinIntensity, MaxIntensity)
-                                                  
 
-                
+                plt1.setLogMode(False,True)
+
+                #plt1.setXRange(MinIntensity, MaxIntensity)
+
+
+
 
 
     def setConfocalLUTTickValues(self, ChannelNumber, Values):
         self.ConfocalLUTTickValues[ChannelNumber] = Values
-        
+
     def ShowStormLut(self, ChannelNumber, ChannelColor):
         if self.DisplayedStormChannel != []:
             container = self.main_window.dialog_tool_lut.verticalLayout_storm_lut
@@ -707,11 +705,11 @@ class StormDisplay(object):
             # self.StormLUTWidget = pg.PlotWidget()
             self.StormLUTWidget = pg.GraphicsWindow()
             self.main_window.dialog_tool_lut.verticalLayout_storm_lut.addWidget(self.StormLUTWidget)
-            
+
             LowerSpin=self.main_window.dialog_tool_lut.spinBox_storm_LUT_lower
-            UpperSpin=self.main_window.dialog_tool_lut.spinBox_storm_LUT_upper 
+            UpperSpin=self.main_window.dialog_tool_lut.spinBox_storm_LUT_upper
             self.main_window.dialog_tool_lut.spinBox_storm_LUT_lower.setValue(self.StormLUTTickValues[ChannelNumber][0]*100)
-            self.main_window.dialog_tool_lut.spinBox_storm_LUT_upper.setValue(self.StormLUTTickValues[ChannelNumber][1]*100)    
+            self.main_window.dialog_tool_lut.spinBox_storm_LUT_upper.setValue(self.StormLUTTickValues[ChannelNumber][1]*100)
             grad = StormLUT.GradientEditorItem(self, ChannelNumber,LowerSpin,UpperSpin, orientation='top')
             C0 = ChannelColor[0]
             C1 = ChannelColor[1]
@@ -722,7 +720,7 @@ class StormDisplay(object):
             grad.setTickValue(grad.listTicks()[1][0], self.StormLUTTickValues[ChannelNumber][1])
             grad.updateGradient()
             self.StormLUTWidget.addItem(grad, 0, 0)
-            
+
             Gausses = np.array(self.StormData_filtered[ChannelNumber])
             if self.StormZColoring == True:
                 Intensity = Gausses[:, 3]
@@ -746,10 +744,10 @@ class StormDisplay(object):
                                                    self.ConfocalChannelColors[ChannelNum][2], 255]], dtype=np.ubyte)
         map = pg.ColorMap(pos, color)
         ColorLut = map.getLookupTable(0.0, 1.0, 256)
-                
+
         self.DisplayedConfocalChannel[ChannelNum].setLookupTable(ColorLut)
-        
-        
+
+
     def UpdateStormChannel(self, ChannelNumber, LutPositions):
         self.StormLUTTickValues[ChannelNumber] = LutPositions
         Gausses = np.array(self.StormData_filtered[ChannelNumber])
@@ -796,33 +794,30 @@ class StormDisplay(object):
                     ListOfBrushes.append(pg.mkBrush(Color))
                     #display the channel
             self.DisplayedStormChannel[ChannelNumber].clear()
-            self.DisplayedStormChannel[ChannelNumber] = self.plot_widget.plot(x=XCoords, y=YCoords, pen=None, symbol='o',
-                                                                              symbolSize=InsertSize, pxMode=False,
-                                                                              symbolPen=ListOfPens,
-                                                                              symbolBrush=ListOfBrushes,
-                                                                              compositionMode=pg.QtGui.QPainter.CompositionMode_Plus,
-                                                                              opacity=self.StormTransparency)
+            pen = ListOfPens
+            brush = ListOfBrushes
         else:
-                 ListOfPens = []
-                 ListOfBrushes = []
-                 InsertSize = []
-                 XCoords=Gausses[:, 0]
-                 YCoords=Gausses[:, 1]
-                 InsertSize=self.storm_dot_size # Sizes[0]
-                 Int = Intensity[0];
-                 if Intensity[0] > LutPositions[1]:
-                            Int = 1;
-                 else:
-                            Int = (Int - LutPositions[0]) / (LutPositions[1] - LutPositions[0])
-                 Color = (self.StormChannelColors[ChannelNumber][0] * Int, self.StormChannelColors[ChannelNumber][1] * Int,
-                            self.StormChannelColors[ChannelNumber][2] * Int, 255 * self.StormTransparency)
-                 self.DisplayedStormChannel[ChannelNumber].clear()
-                 self.DisplayedStormChannel[ChannelNumber] = self.plot_widget.plot(x=XCoords, y=YCoords, pen=None, symbol='o',
-                                                                                  symbolSize=InsertSize, pxMode=False,
-                                                                                  symbolPen=pg.mkPen(Color),
-                                                                                  symbolBrush=pg.mkBrush(Color),
-                                                                                  compositionMode=pg.QtGui.QPainter.CompositionMode_Plus,
-                                                                                  opacity=self.StormTransparency)
+             ListOfPens = []
+             ListOfBrushes = []
+             InsertSize = []
+             XCoords=Gausses[:, 0]
+             YCoords=Gausses[:, 1]
+             InsertSize=self.storm_dot_size # Sizes[0]
+             Int = Intensity[0];
+             if Intensity[0] > LutPositions[1]:
+                        Int = 1;
+             else:
+                        Int = (Int - LutPositions[0]) / (LutPositions[1] - LutPositions[0])
+             Color = (self.StormChannelColors[ChannelNumber][0] * Int, self.StormChannelColors[ChannelNumber][1] * Int,
+                        self.StormChannelColors[ChannelNumber][2] * Int, 255 * self.StormTransparency)
+             self.DisplayedStormChannel[ChannelNumber].clear()
+             pen = pg.mkPen(Color)
+             brush = pg.mkBrush(Color)
+
+        self.DisplayedStormChannel[ChannelNumber] = self.plot_widget.plot(
+            x=XCoords, y=YCoords, pen=None, symbol='o', symbolSize=InsertSize, pxMode=False, symbolPen=pen,
+            symbolBrush=brush, compositionMode=pg.QtGui.QPainter.CompositionMode_Plus, opacity=self.StormTransparency)
+
     def ShowAllStormChannels(self):
         for ChannelNum in range(len(self.StormChannelList)):
             self.ShowStormChannel(ChannelNum)
@@ -835,11 +830,8 @@ class StormDisplay(object):
         if self.StormChannelVisible[ChannelNumber] and len(np.array(self.StormData_filtered[ChannelNumber]))>0:
             Gausses = np.array(self.StormData_filtered[ChannelNumber])
             LutPositions=self.StormLUTTickValues[ChannelNumber]
-            XCoords = []
-            YCoords = []
-            DrawTogether=False
+
             if self.StormZColoring == True:
-                # print("Zcoloring")
                 Intensity = Gausses[:, 3]
                 Intensity = Intensity - np.amin(Intensity) + 0.1
                 Intensity = Intensity / np.amax(Intensity)
@@ -849,59 +841,21 @@ class StormDisplay(object):
                     DrawTogether=True
                 else:
                     Intensity = 25.0 / (Gausses[:, 2]**2)
-            # Prec = Gausses[:, 2]
-            # Prec = Prec / np.amax(Prec)
-            # Sigma = 1.0 / (np.sqrt(2 * np.pi) * Prec)
 
-            # Sizes = Sigma * self.storm_dot_size *2.5  # five
             Sizes= Gausses[:, 2]
-            if not DrawTogether:
-                # create an individual pen and brush for every gauss
-                ListOfPens = []
-                ListOfBrushes = []
-                InsertSize = []
-                for a in range(len(Gausses)):
-                    if Intensity[a] > LutPositions[0]:
-                        #this could be changed to where-indexing, instead of append
-                        XCoords.append(Gausses[a, 0])
-                        YCoords.append(Gausses[a, 1])
-                        InsertSize.append(Sizes[a])
-                        Int = Intensity[a];
-                        if Intensity[a] > LutPositions[1]:
-                            Int = 1;
-                        else:
-                            Int = (Int - LutPositions[0]) / (LutPositions[1] - LutPositions[0])
-                        Color = (
-                            self.StormChannelColors[ChannelNumber][0] * Int, self.StormChannelColors[ChannelNumber][1] * Int,
-                            self.StormChannelColors[ChannelNumber][2] * Int, 255 * self.StormTransparency)
-                        ListOfPens.append(pg.mkPen(Color))
-                        ListOfBrushes.append(pg.mkBrush(Color))
-                        #display the channel
-                self.DisplayedStormChannel[ChannelNumber] = self.plot_widget.plot(x=XCoords, y=YCoords, pen=None, symbol='o',
-                                                                                  symbolSize=InsertSize, pxMode=False,
-                                                                                  symbolPen=ListOfPens,
-                                                                                  symbolBrush=ListOfBrushes,
-                                                                                  compositionMode=pg.QtGui.QPainter.CompositionMode_Plus,
-                                                                                  opacity=self.StormTransparency)
-            else:
-                 ListOfPens = []
-                 ListOfBrushes = []
-                 InsertSize = []
-                 XCoords=Gausses[:, 0]
-                 YCoords=Gausses[:, 1]
-                 InsertSize=self.storm_dot_size
-                 Int = Intensity[0];
-                 if Intensity[0] > LutPositions[1]:
-                            Int = 1;
-                 else:
-                            Int = (Int - LutPositions[0]) / (LutPositions[1] - LutPositions[0])
-                 Color = (self.StormChannelColors[ChannelNumber][0] * Int, self.StormChannelColors[ChannelNumber][1] * Int,
-                            self.StormChannelColors[ChannelNumber][2] * Int, 255 * self.StormTransparency)
-                 self.DisplayedStormChannel[ChannelNumber] = self.plot_widget.plot(x=XCoords, y=YCoords, pen=None, symbol='o',
-                                                                                  symbolSize=InsertSize, pxMode=False,
-                                                                                  symbolPen=pg.mkPen(Color),
-                                                                                  symbolBrush=pg.mkBrush(Color),
-                                                                                  compositionMode=pg.QtGui.QPainter.CompositionMode_Plus,
-                                                                                  opacity=self.StormTransparency)
 
-                 
+            XCoords=Gausses[:, 0]
+            YCoords=Gausses[:, 1]
+
+            Int = Intensity[0];
+            if Intensity[0] > LutPositions[1]:
+                Int = 1;
+            else:
+                Int = (Int - LutPositions[0]) / (LutPositions[1] - LutPositions[0])
+
+            scc = self.StormChannelColors[ChannelNumber] # 255 * self.StormTransparency
+            Color = (scc[0] * Int, scc[1] * Int, scc[2] * Int, 255 * self.StormTransparency)
+
+            self.DisplayedStormChannel[ChannelNumber] = self.plot_widget.plot(x=XCoords, y=YCoords,
+                pen=None, symbolPen=None, symbol='o', symbolSize=2.5, pxMode=True,
+                symbolBrush=Color, autoDownsample=True, clipToView=False)
