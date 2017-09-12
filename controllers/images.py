@@ -42,7 +42,8 @@ class StormImage(MicroscopeImage):
 
     def parse(self):
         self.isParsingNeeded = False
-        dt = pd.read_csv(self.file_path, delimiter='\t')
+        # TODO: use the below line for opening the storm file
+        # dt = pd.read_csv(self.file_path, delimiter='\t')
 
 
         # Decrease the parameters by one, because indexing goes from zero, but zeros means ignore property

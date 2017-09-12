@@ -17,6 +17,7 @@ Pillow==4.2.1
 prompt-toolkit==1.0.15
 ptyprocess==0.5.2
 Pygments==2.2.0
+PyOpenGL==3.1.0
 pyparsing==2.2.0
 PyQt5==5.9
 pyqtgraph==0.10.0
