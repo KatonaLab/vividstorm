@@ -85,6 +85,8 @@ class MainWindow(Ui_MainWindow):
 
     def _add_dialog(self, new_dialog):
         qtDialog = QtGui.QDialog()
+        qtDialog.setModal(False)
+        qtDialog.setWindowFlags(Qt.WindowStaysOnTopHint)
         new_dialog.setupUi(qtDialog)
         new_dialog.qtDialog = qtDialog
         new_dialog.main_window = self
@@ -104,7 +106,14 @@ class MainWindow(Ui_MainWindow):
         self.dialog_about=self._add_dialog(AboutDialog())
         self.dialog_help=self._add_dialog(HelpDialog())
         self.dialog_imageregistration = self._add_dialog(ImageRegistrationDialog())
-        
+
+    def closeEvent(self, event):
+        to_close = [self.dialog_tool_lut, self.dialog_tool_active_contour, self.dialog_tool_analysis,
+            self.dialog_view_dots, self.dialog_view_gaussian, self.dialog_view_3d, self.dialog_scale,
+            self.dialog_loading, self.dialog_error, self.dialog_about, self.dialog_help, self.dialog_imageregistration]
+
+        for dialog in to_close:
+            self._close_dialog(dialog)
 
     def _add_action_handlers(self):
         self.actionOpen_STORM_files.triggered.connect(lambda: self._open_files('storm'))
@@ -250,7 +259,7 @@ class MainWindow(Ui_MainWindow):
         file_dialog = QtGui.QFileDialog()
         working_directory = QtGui.QFileDialog.getExistingDirectory(file_dialog, 'Select working directory',
                                                                    self.working_directory)
-        if working_directory.length() > 0:
+        if len(working_directory) > 0:
             self.working_directory = str(working_directory)
             self.working_directory_unset = False
         #write working directory to file
@@ -286,7 +295,7 @@ class MainWindow(Ui_MainWindow):
             image_list = self.storm_images_list
         elif mode == 'confocal':
             image_list = self.confocal_images_list
-        for i in xrange(image_list.count()):
+        for i in range(image_list.count()):
             self._close_file(mode, 0)
             # image_list.clear()
 
@@ -438,7 +447,8 @@ class MainWindow(Ui_MainWindow):
             else:
                     self.show_error(message='No STORM file is opened!')
                     return False
-        dialog.qtDialog.exec_()
+        # dialog.qtDialog.exec_()
+        dialog.qtDialog.show()
 
     def _draw_roi(self, shape):
         if self.viewer.current_storm_image:
