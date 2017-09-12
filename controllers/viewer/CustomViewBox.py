@@ -61,8 +61,8 @@ class CustomViewBox(pg.ViewBox):
         elif self.PanMode == 'Conf':
             cursorOffset = ev.screenPos() - ev.lastScreenPos()
             # scale to pixel coordinates
-            XTrans = cursorOffset[0] * self.viewPixelSize()[0] / 8
-            YTrans = cursorOffset[1] * self.viewPixelSize()[1] / 8
+            XTrans = cursorOffset[0] * self.viewPixelSize()[0] / 80
+            YTrans = cursorOffset[1] * self.viewPixelSize()[1] / 80
             self.ConfocalOffset = [self.ConfocalOffset[0] + YTrans, self.ConfocalOffset[1] + XTrans]
             
             for CN in range(4):

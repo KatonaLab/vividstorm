@@ -42,7 +42,7 @@ class fcycle(object):
         self.funcs = cycle(iterable)
     
     def __call__(self, *args, **kwargs):
-        f = self.funcs.next()
+        f = next(self.funcs)
         return f(*args, **kwargs)
     
 

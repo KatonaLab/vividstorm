@@ -7,6 +7,7 @@ from pyqtgraph.pgcollections import OrderedDict
 from pyqtgraph.colormap import ColorMap
 
 import numpy as np
+import operator
 
 __all__ = ['TickSliderItem', 'GradientEditorItem']
 
@@ -338,10 +339,7 @@ class TickSliderItem(pg.GraphicsWidget):
 
     def listTicks(self):
         """Return a sorted list of all the Tick objects on the slider."""
-        ## public
-        ticks = list(self.ticks.items())
-        sortList(ticks, lambda a,b: cmp(a[1], b[1]))  ## see pyqtgraph.python2_3.sortList
-        return ticks
+        return sorted(self.ticks.items(), key=operator.itemgetter(1))
 
 
 class GradientEditorItem(TickSliderItem):
